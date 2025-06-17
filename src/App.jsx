@@ -1,11 +1,20 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import NotFound from './components/NotFound';
 
+import AdminRoutes from './components/Pages/AdminRoutes';
 
-const App =()=>{
+const App = () => {
+  const isLoggedIn = true; // Hardcoded login check
+
   return (
-    <div className="App">
-      <h1>Welcome to My App</h1>
-      <p>This is a simple React application.</p>
-    </div>
+    <Routes>
+      <Route
+        path="/admin"
+        element={isLoggedIn ? <AdminRoutes /> : <Navigate to="/login" replace />}
+      />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
-}
+};
+
 export default App;
