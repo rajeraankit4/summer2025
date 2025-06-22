@@ -9,7 +9,11 @@ const App = () => {
   return (
     <Routes>
       <Route
-        path="/admin"
+        path="/"
+        element={isLoggedIn ? <Navigate to="/admin" replace /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/admin/*"
         element={isLoggedIn ? <AdminRoutes /> : <Navigate to="/login" replace />}
       />
       <Route path="*" element={<NotFound />} />
