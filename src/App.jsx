@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import LandingPage from './components/Pages/LandingPage/LandingPage';
+import LandingPage from './Components/Pages/LandingPage/LandingPage';
 // import NotFound from './components/Pages/NotFound/NotFound';
-import AdminRoutes from './components/Pages/AdminRoutesDef/AdminRoutes';
+import AdminRoutes from './Components/Pages/AdminRoutesDef/AdminRoutes';
 
 const App = () => {
   const user = {
@@ -17,6 +17,7 @@ const App = () => {
       )}
       {/* <Route path="*" element={<NotFound />} /> */}
     </Routes>
+
   );
 };
 
