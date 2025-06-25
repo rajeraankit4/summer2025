@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { assets } from "../assets/assets";
+import { assets } from "../assets/assets"; // Make sure this path is correct
 
-const images = [assets.MESS_1, assets.MESS_3, assets.MESS_4, assets.MESS_5];
-
-const Home = () => {
+const ImageSlider = () => {
   const [index, setIndex] = useState(0);
+
+  const images = [assets.MESS_1, assets.MESS_3, assets.MESS_4, assets.MESS_5];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
-    }, 3000); // 3 seconds per image
+    }, 3000); // Change slide every 3 seconds
+
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -44,4 +45,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default ImageSlider;

@@ -1,25 +1,23 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './Components/navbar';
-import Home from './pages/Home';
-import Uppernavbar from './Components/Uppernavbar'; // ✅ Corrected import
-import Footer from './Components/footer'; // Assuming you have a footer componen
-import About from './Components/About';
+import { Routes, Route } from "react-router-dom";
+import LandingPage from './Components/Pages/LandingPage/LandingPage';
+// import NotFound from './components/Pages/NotFound/NotFound';
+import AdminRoutes from './Components/Pages/AdminRoutesDef/AdminRoutes';
 
 const App = () => {
+  const user = {
+    isLoggedIn: true,
+    role: "canteenadmin", // or "staffadmin", "contentadmin"
+  };
+
   return (
-    <div className=" bg-gray-50 max-h-full sm:mx-[.001%]">
-       <Navbar />
-      <Uppernavbar /> {/* ✅ Correct usage */}
-     
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<div>About Page</div>} />
-        {/* Add more routes like About, Contact etc. if needed */}
-      </Routes>
-      <About/> {/* Assuming you have an About component */}
-      <Footer />
-    </div>
+    <Routes>
+      <Route path="/*" element={<LandingPage />} />
+      {user.isLoggedIn && (
+        <Route path="/admin/*" element={<AdminRoutes role={user.role} />} />
+      )}
+      {/* <Route path="*" element={<NotFound />} /> */}
+    </Routes>
+
   );
 };
 
