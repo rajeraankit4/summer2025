@@ -1,10 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import NotFound from './components/NotFound';
-
-import AdminRoutes from './components/Pages/AdminRoutes';
+import { Routes, Route } from "react-router-dom";
+import LandingPage from './components/Pages/LandingPage/LandingPage';
+// import NotFound from './components/Pages/NotFound/NotFound';
+import AdminRoutes from './components/Pages/AdminRoutesDef/AdminRoutes';
 
 const App = () => {
-  const isLoggedIn = true; // Hardcoded login check
+  const user = {
+    isLoggedIn: true,
+    role: "canteenadmin", // or "staffadmin", "contentadmin"
+  };
 
   return (
     <Routes>

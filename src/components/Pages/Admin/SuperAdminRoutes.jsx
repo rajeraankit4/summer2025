@@ -10,7 +10,7 @@ import Billing from "../Billing";
 import Notices from "../Notices";
 import Settings from "../Settings";
 
-const AdminRoutes = () => {
+const SuperAdmin = () => {
   return (
     <Routes>
       <Route path="/" element={<AdminLayout />}>
@@ -27,4 +27,4 @@ const AdminRoutes = () => {
   );
 };
 
-export default AdminRoutes;
+export default SuperAdmin;
