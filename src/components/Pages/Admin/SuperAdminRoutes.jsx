@@ -1,6 +1,6 @@
 // src/routes/AdminRoutes.jsx
 import { Routes, Route } from 'react-router-dom';
-import AdminLayout from '../../AdminLayout';
+import AdminLayout from '../../AdminLayouts/AdminLayout';
 
 import Dashboard from '../../Dashboard';
 import Students from '../../Student';
@@ -10,7 +10,7 @@ import Billing from '../../Billing';
 import Notices from '../../Notices';
 import Settings from '../../Settings';
 
-const AdminRoutes = () => {
+const SuperAdmin = () => {
   return (
     <Routes>
       <Route path="/" element={<AdminLayout />}>
@@ -26,4 +26,4 @@ const AdminRoutes = () => {
   );
 };
 
-export default AdminRoutes;
+export default SuperAdmin;
