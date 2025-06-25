@@ -9,7 +9,6 @@ import {
   Megaphone,
   Settings,
 } from 'lucide-react';
-import Students from './Student';
 
 const navItems = [
   { name: 'Dashboard', path: '/admin/dashboard', icon: <Building2 size={18} /> },
@@ -52,7 +51,7 @@ export default function AdminLayout() {
       {/* Main Content */}
       <main className="flex-1 p-8 bg-gray-100 overflow-auto">
         <Outlet />
-        <Students />
+       
       </main>
     </div>
   );

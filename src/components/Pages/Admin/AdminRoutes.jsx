@@ -1,14 +1,14 @@
 // src/routes/AdminRoutes.jsx
 import { Routes, Route } from 'react-router-dom';
-import AdminLayout from '../AdminLayout';
+import AdminLayout from '../../AdminLayout';
 
-import Dashboard from '../Dashboard';
-import Students from '../Student';
-import MessManagement from '../MessManagment';
-import CanteenManagement from '../CanteenManagment';
-import Billing from '../Billing';
-import Notices from '../Notices';
-import Settings from '../Settings';
+import Dashboard from '../../Dashboard';
+import Students from '../../Student';
+import MessManagement from '../../MessManagment';
+import CanteenManagement from '../../CanteenManagment';
+import Billing from '../../Billing';
+import Notices from '../../Notices';
+import Settings from '../../Settings';
 
 const AdminRoutes = () => {
   return (
