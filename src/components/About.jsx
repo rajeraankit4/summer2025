@@ -1,5 +1,4 @@
 import React from 'react';
-import { assets } from '../assets/assets';
 
 const About = () => {
   return (
@@ -15,21 +14,26 @@ const About = () => {
       <div className="flex flex-col md:flex-row gap-12 items-center mb-16">
         <img
           className="w-full md:max-w-md rounded-lg shadow-md object-cover"
-          src={assets.About}
+          src="https://source.unsplash.com/600x400/?college,canteen"
           alt="About us"
         />
         <div className="flex flex-col gap-5 text-[16px] text-gray-700 leading-relaxed">
           <p>
-  Welcome to <span className="font-semibold text-primary">PU Mess Management</span>, your dedicated solution for organizing and managing daily dining services efficiently. We understand how essential it is for students and staff to access hygienic, timely, and nutritious meals without hassle.
-</p>
-<p>
-  Our platform is designed to streamline mess operations — from meal scheduling and inventory tracking to real-time feedback and issue reporting. Whether you're a student checking daily menus or an administrator ensuring smooth kitchen operations, our system keeps everything running seamlessly.
-</p>
-<h3 className="text-xl font-bold text-gray-800">Our Vision</h3>
-<p>
-  Our vision is to modernize campus dining with smart technology. By enhancing transparency, reducing waste, and improving user experience, we aim to make mess services more reliable, sustainable, and student-friendly.
-</p>
-
+            Welcome to <span className="font-semibold text-primary">PU Mess Management</span>, your dedicated
+            solution for organizing and managing daily dining services efficiently. We understand how essential
+            it is for students and staff to access hygienic, timely, and nutritious meals without hassle.
+          </p>
+          <p>
+            Our platform is designed to streamline mess operations — from meal scheduling and inventory tracking
+            to real-time feedback and issue reporting. Whether you're a student checking daily menus or an
+            administrator ensuring smooth kitchen operations, our system keeps everything running seamlessly.
+          </p>
+          <h3 className="text-xl font-bold text-gray-800">Our Vision</h3>
+          <p>
+            Our vision is to modernize campus dining with smart technology. By enhancing transparency, reducing
+            waste, and improving user experience, we aim to make mess services more reliable, sustainable, and
+            student-friendly.
+          </p>
         </div>
       </div>
 
@@ -44,7 +48,7 @@ const About = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
-           title: 'EFFICIENCY',
+            title: 'EFFICIENCY',
             desc: 'Simplified meal tracking and scheduling to ensure smooth daily mess operations.',
           },
           {

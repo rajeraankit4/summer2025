@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { assets } from "../assets/assets"; // Make sure this path is correct
 
 const ImageSlider = () => {
   const [index, setIndex] = useState(0);
 
-  const images = [assets.MESS_1, assets.MESS_3, assets.MESS_4, assets.MESS_5];
+  // ✅ Replace with Unsplash random image URLs (you can customize topics)
+  const images = [
+    "\image1",
+    "https://source.unsplash.com/random/1600x900?college",
+    "https://source.unsplash.com/random/1600x900?students",
+    "https://source.unsplash.com/random/1600x900?education",
+    "https://source.unsplash.com/random/1600x900?library",
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -19,8 +25,8 @@ const ImageSlider = () => {
     <div className="relative w-full h-screen overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.img
-          key={images[index]}
-          src={images[index]}
+          key={index} // Use index to force remount for animation
+          src={images[index] + `&sig=${index}`} // Add `sig` to force different images
           alt={`slide-${index}`}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -35,7 +41,7 @@ const ImageSlider = () => {
         {images.map((_, i) => (
           <div
             key={i}
-            className={`h-3 w-3 rounded-full ${
+            className={`h-3 w-3 rounded-full transition-colors ${
               i === index ? "bg-white" : "bg-gray-400"
             }`}
           />

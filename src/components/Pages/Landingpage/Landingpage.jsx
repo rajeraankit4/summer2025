@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Homepage from "../../Home";
+import Homepage from "../../Home/Home";
 
 
 const LandingPage = () => {

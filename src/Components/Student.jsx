@@ -1,24 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, Search, XCircle } from 'lucide-react';
+// import axios from 'axios'; // Uncomment when backend is ready
 
-const dummyStudents = [
-  { id: 1, name: 'Aman Sharma', email: 'aman@hostel.com', room: 'B-102', verified: true },
-  { id: 2, name: 'Purav Patel', email: 'purav@hostel.com', room: 'C-204', verified: false },
-  { id: 3, name: 'Ravi Kumar', email: 'ravi@hostel.com', room: 'A-309', verified: false },
-  { id: 4, name: 'Raj Sharma', email: 'raj@hostel.com', room: 'B-106', verified: true },
-  { id: 5, name: 'Shivam Patel', email: 'shivam@hostel.com', room: 'C-202', verified: false },
-];
-
-export default function Students() {
+const Students = () => {
+  const [students, setStudents] = useState([]);
   const [search, setSearch] = useState('');
 
-  const filteredStudents = dummyStudents.filter((student) =>
+  // Dummy data for now
+  const dummyStudents = [
+    { id: 1, name: 'Aman Sharma', email: 'aman@hostel.com', room: 'B-102', verified: true },
+    { id: 2, name: 'Purav Patel', email: 'purav@hostel.com', room: 'C-204', verified: false },
+    { id: 3, name: 'Ravi Kumar', email: 'ravi@hostel.com', room: 'A-309', verified: false },
+    { id: 4, name: 'Raj Sharma', email: 'raj@hostel.com', room: 'B-106', verified: true },
+    { id: 5, name: 'Shivam Patel', email: 'shivam@hostel.com', room: 'C-202', verified: false },
+  ];
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        // const response = await axios.get('/api/students');
+        // setStudents(response.data);
+        
+        // Temporary dummy data
+        setStudents(dummyStudents);
+      } catch (err) {
+        console.error('Failed to fetch students:', err);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(search.toLowerCase()) ||
     student.email.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-800">🎓 Student Management</h1>
 
       <div className="flex justify-between items-center">
@@ -34,8 +53,8 @@ export default function Students() {
         </div>
       </div>
 
-      <div className="overflow-auto rounded-lg shadow">
-        <table className="w-full table-auto border-collapse bg-white">
+      <div className="overflow-auto rounded-lg shadow bg-white">
+        <table className="w-full table-auto border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
               <th className="px-6 py-4">Name</th>
@@ -87,4 +106,6 @@ export default function Students() {
       </div>
     </div>
   );
-}
+};
+
+export default Students;
