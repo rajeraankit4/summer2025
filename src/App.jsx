@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from './Components/Pages/LandingPage/LandingPage';
 import NotFound from './Components/NotFound';
 import AdminRoutes from './Components/Pages/Adminroutesdef/Adminroutes';
+import LoginPage from "./LoginPage";
 
 const App = () => {
   const user = {
@@ -13,7 +14,9 @@ const App = () => {
     <Routes>
       {/* Public Landing Page */}
       <Route path="/" element={<LandingPage />} />
-
+     
+     <Route path="/login" element={<LoginPage />} />
+     
       {/* Protected Admin Routes */}
       <Route
         path="/admin/*"
@@ -21,7 +24,7 @@ const App = () => {
           user.isLoggedIn ? (
             <AdminRoutes role={user.role} />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate to="/login" replace />
           )
         }
       />

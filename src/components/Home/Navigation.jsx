@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ChefHat, Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // ✅ Import
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate(); // ✅ Initialize
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -17,7 +19,7 @@ const Navigation = () => {
               <p className="text-xs text-gray-600">Mess & Canteen Manager</p>
             </div>
           </div>
-          
+
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <a href="#home" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">Home</a>
@@ -25,16 +27,16 @@ const Navigation = () => {
             <a href="#expenses" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">Expense Tracker</a>
             <a href="#about" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">About</a>
             <a href="#contact" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">Contact</a>
-            <button className="bg-[#ee8d4a] text-white px-6 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors">
-              Login
+            <button
+              onClick={() => navigate("/login")} // ✅ Corrected
+              className="bg-[#ee8d4a] text-white px-6 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors"
+            >
+              login
             </button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
+          <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -48,7 +50,13 @@ const Navigation = () => {
               <a href="#expenses" className="block px-3 py-2 text-gray-700 hover:text-[#ee8d4a]">Expense Tracker</a>
               <a href="#about" className="block px-3 py-2 text-gray-700 hover:text-[#ee8d4a]">About</a>
               <a href="#contact" className="block px-3 py-2 text-gray-700 hover:text-[#ee8d4a]">Contact</a>
-              <button className="w-full text-left bg-[#ee8d4a] text-white px-3 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors">
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="w-full text-left bg-[#ee8d4a] text-white px-3 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors"
+              >
                 Login
               </button>
             </div>
