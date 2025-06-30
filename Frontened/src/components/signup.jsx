@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "../api/axiosConfig";
 
 const Signup = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", hostelNo: "", phone: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", hostelNo: "", phoneNo: "", password: "" });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
