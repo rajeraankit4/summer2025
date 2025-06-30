@@ -11,27 +11,23 @@ const App = () => {
   };
 
   return (
-    <Routes>
-      {/* Public Landing Page */}
-      <Route path="/" element={<LandingPage />} />
-     
-     <Route path="/login" element={<LoginPage />} />
-     
-      {/* Protected Admin Routes */}
-      <Route
-        path="/admin/*"
-        element={
-          user.isLoggedIn ? (
-            <AdminRoutes role={user.role} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+   <Routes>
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/signup" element={<LoginPage mode="signup" />} />
+  <Route path="/login" element={<LoginPage mode="login" />} />
+  <Route
+    path="/admin/*"
+    element={
+      user.isLoggedIn ? (
+        <AdminRoutes role={user.role} />
+      ) : (
+        <Navigate to="/login" replace />
+      )
+    }
+  />
+  <Route path="*" element={<NotFound />} />
+</Routes>
 
-      {/* Fallback Route for 404s */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
   );
 };
 

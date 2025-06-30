@@ -5,9 +5,14 @@ import Signup from "./components/signup";
 import FloatingImages from "./components/FloatingImages";
 import logo from "./assets/pulogo.png";
 import logo1 from "./assets/Uietlogo.png";
+import { useEffect } from "react";
 
-const LoginPage = () => {
-  const [showLogin, setShowLogin] = useState(true);
+const LoginPage = ({ mode = "login" }) => {
+const [showLogin, setShowLogin] = useState(true);
+
+useEffect(() => {
+  setShowLogin(mode === "login");
+}, [mode]);
   const toggleLogin = () => setShowLogin(!showLogin);
   const navigate = useNavigate();
 
