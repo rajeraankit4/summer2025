@@ -5,6 +5,7 @@ import MESS_3 from './MESS_3.png';
 import MESS_4 from './MESS_4.png';
 import MESS_5 from './MESS_5.png';
 import About from './About.png';
+import chatBubbles from '../assets/chat-bubbles.png';
 
 export const assets = {
   PuLogoDark,
@@ -12,5 +13,8 @@ export const assets = {
   MESS_3,
   MESS_4,
   MESS_5,
-  About
+  About,
+  chatBubbles
 };
+
+
