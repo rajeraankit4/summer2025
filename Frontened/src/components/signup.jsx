@@ -1,67 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "../api/axiosConfig";
 
 const Signup = () => {
+  const [formData, setFormData] = useState({ name: "", email: "", hostelNo: "", phone: "", password: "" });
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("/api/auth/signup", formData);
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.error || "Signup failed");
+    }
+  };
+
   return (
-    <>
+    <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-3xl font-bold text-center mb-8">Sign Up</h2>
-
-      <div className="mb-4">
-        <label className="block relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <i className="fas fa-user text-gray-500"></i>
-          </span>
-          <input
-            type="text"
-            placeholder="Name"
-            className="pl-10 w-full p-3 rounded-full bg-gray-200 focus:outline-none"
-          />
-        </label>
-      </div>
-
-      <div className="mb-4">
-        <label className="block relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <i className="fas fa-envelope text-gray-500"></i>
-          </span>
-          <input
-            type="email"
-            placeholder="Email"
-            className="pl-10 w-full p-3 rounded-full bg-gray-200 focus:outline-none"
-          />
-        </label>
-      </div>
-
-      <div className="mb-4">
-        <label className="block relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <i className="fas fa-building text-gray-500"></i>
-          </span>
-          <input
-            type="number"
-            placeholder="Hostel No"
-            className="pl-10 w-full p-3 rounded-full bg-gray-200 focus:outline-none"
-          />
-        </label>
-      </div>
-
-      <div className="mb-4">
-        <label className="block relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <i className="fas fa-phone text-gray-500"></i>
-          </span>
-          <input
-            type="number"
-            placeholder="Phone No"
-            className="pl-10 w-full p-3 rounded-full bg-gray-200 focus:outline-none"
-          />
-        </label>
-      </div>
-      
-
-      <button className="w-full bg-black text-white py-3 rounded-full font-semibold mb-4">
-        Sign Up
-      </button>
-    </>
+      {Object.keys(formData).map((key) => (
+        <input key={key} name={key} type={key === 'password' ? 'password' : 'text'} placeholder={key.charAt(0).toUpperCase() + key.slice(1)} value={formData[key]} onChange={handleChange} required className="w-full p-3 rounded-full bg-gray-200 focus:outline-none" />
+      ))}
+      <button type="submit" className="w-full bg-black text-white py-3 rounded-full font-semibold hover:bg-gray-800 transition">Sign Up</button>
+    </form>
   );
 };
 
