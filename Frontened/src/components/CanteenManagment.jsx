@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Pencil } from 'lucide-react';
+import axios from '../api/axiosConfig';
 
-const AuthorizedMessStaff = () => {
+const CanteenManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [staffList, setStaffList] = useState([
-    { name: 'Naman', mobile: '654654', date: '23 May 2024' },
-    { name: 'Chintu', mobile: '654654', date: '23 Aug 2024' },
-    { name: 'Akhil', mobile: '654654', date: '15 Jan 2025' },
-  ]);
+  const [staffList, setStaffList] = useState([]);
+  const [editedList, setEditedList] = useState([]);
 
-  const [editedList, setEditedList] = useState([...staffList]);
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const res = await axios.get('/api/canteen-staff');
+        setStaffList(res.data);
+        setEditedList(res.data);
+      } catch (err) {
+        console.error('Failed to fetch canteen staff:', err);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const handleChange = (index, field, value) => {
     const updatedList = [...editedList];
@@ -17,9 +26,14 @@ const AuthorizedMessStaff = () => {
     setEditedList(updatedList);
   };
 
-  const handleSave = () => {
-    setStaffList(editedList);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await axios.put('/api/canteen-staff', editedList);
+      setStaffList(editedList);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to update canteen staff:', err);
+    }
   };
 
   const handleCancel = () => {
@@ -32,7 +46,7 @@ const AuthorizedMessStaff = () => {
       <h1 className="text-2xl font-bold mb-4">🛒 Canteen Management</h1>
       <div className="flex justify-between items-center mb-4">
         <div className="bg-white px-4 py-1 rounded-full text-black font-bold text-lg border border-black">
-          Authorised Mess Staff
+          Authorised Canteen Staff
         </div>
         {!isEditing ? (
           <button
@@ -114,4 +128,4 @@ const AuthorizedMessStaff = () => {
   );
 };
 
-export default AuthorizedMessStaff;
+export default CanteenManagement;

@@ -140,69 +140,107 @@ const StudentNotifications = () => (
   </div>
 );
 
-const StudentProfile = () => (
-  <div className="space-y-6">
-    <h1 className="text-3xl font-bold text-gray-800 mb-6">👤 My Profile</h1>
+const StudentProfile = () => {
+  const [student, setStudent] = useState(null);
+  const [phone, setPhone] = useState('');
+  const [profilePic, setProfilePic] = useState('');
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center mb-6">
-          <img
-            src="/src/assets/Uietlogo.png"
-            alt="Profile"
-            className="h-24 w-24 rounded-full mx-auto mb-4 object-cover bg-gray-100 p-2"
-          />
-          <h2 className="text-xl font-semibold">Rajesh Kumar</h2>
-          <p className="text-gray-600">B-Block, Room 204</p>
-        </div>
-        <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
-          Change Profile Picture
-        </button>
-      </div>
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        // Replace with actual student ID from auth context
+        const studentId = "some-student-id"; 
+        const res = await axios.get(`/api/students/${studentId}`);
+        setStudent(res.data);
+        setPhone(res.data.phone);
+        setProfilePic(res.data.profilePic || "/src/assets/Uietlogo.png");
+      } catch (err) {
+        console.error('Failed to fetch student profile:', err);
+      }
+    };
+    fetchStudent();
+  }, []);
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value="Rajesh Kumar"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              readOnly
+  const handleUpdateProfile = async () => {
+    try {
+      const studentId = "some-student-id"; 
+      await axios.put(`/api/students/${studentId}`, { phoneNo: phone, profilePic });
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      alert('Failed to update profile.');
+    }
+  };
+
+  if (!student) {
+    return <div>Loading profile...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">👤 My Profile</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="text-center mb-6">
+            <img
+              src={profilePic}
+              alt="Profile"
+              className="h-24 w-24 rounded-full mx-auto mb-4 object-cover bg-gray-100 p-2"
             />
+            <h2 className="text-xl font-semibold">{student.firstName} {student.lastName}</h2>
+            <p className="text-gray-600">{student.hostelBlock}, Room {student.roomNumber}</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value="rajesh@student.com"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value="9876543210"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <button className="w-full bg-green-600 text-white py-2 rounded-lg">
-            Update Profile
+          <button onClick={() => alert('Feature to change profile picture not implemented yet.')} className="w-full bg-blue-600 text-white py-2 rounded-lg">
+            Change Profile Picture
           </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={`${student.firstName} ${student.lastName}`}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={student.email}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              />
+            </div>
+            <button onClick={handleUpdateProfile} className="w-full bg-green-600 text-white py-2 rounded-lg">
+              Update Profile
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const StudentSettings = () => (
   <div className="space-y-6">

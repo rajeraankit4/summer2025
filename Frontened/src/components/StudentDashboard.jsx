@@ -1,53 +1,56 @@
 import { useState, useEffect } from "react";
 import { UtensilsCrossed, Bell, Receipt } from "lucide-react";
+import axios from "../api/axiosConfig";
 
 const StudentDashboard = () => {
-  const [currentUser, setCurrentUser] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh@student.com",
-    hostelNo: "B-Block",
-    room: "B-204",
-    phoneNo: "9876543210",
-    profilePic: "/src/assets/Uietlogo.png",
-  });
+  const [currentUser, setCurrentUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "menu",
-      message: "Today's special: Butter Chicken & Naan",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      type: "payment",
-      message: "Mess fee payment due in 3 days",
-      time: "5 hours ago",
-    },
-    {
-      id: 3,
-      type: "announcement",
-      message: "Mess will be closed on Sunday for maintenance",
-      time: "1 day ago",
-    },
-  ]);
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        // You would typically get the student's ID from auth context
+        const studentId = "some-student-id"; // Replace with actual ID
+        const res = await axios.get(`/api/students/${studentId}`);
+        setCurrentUser(res.data);
+      } catch (err) {
+        console.error("Failed to fetch student data:", err);
+      }
+    };
+
+    const fetchNotifications = async () => {
+      try {
+        const res = await axios.get("/api/notices");
+        setNotifications(res.data.reverse());
+      } catch (err) {
+        console.error("Failed to fetch notifications:", err);
+      }
+    };
+
+    fetchStudentData();
+    fetchNotifications();
+  }, []);
+
+  if (!currentUser) {
+    return <div>Loading...</div>;
+  }
 
   const quickStats = [
     {
       label: "Meals This Month",
-      value: "45",
+      value: "45", // This would be calculated from user data
       icon: UtensilsCrossed,
       color: "text-blue-600",
     },
     {
       label: "Avg Daily Expense",
-      value: "₹85",
+      value: "₹85", // This would be calculated from user data
       icon: Receipt,
       color: "text-purple-600",
     },
     {
       label: "Pending Notifications",
-      value: "3",
+      value: notifications.length,
       icon: Bell,
       color: "text-orange-600",
     },
@@ -86,14 +89,14 @@ const StudentDashboard = () => {
             <div className="space-y-3">
               {notifications.slice(0, 3).map((notification) => (
                 <div
-                  key={notification.id}
+                  key={notification._id}
                   className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400"
                 >
                   <p className="text-sm text-gray-800">
-                    {notification.message}
+                    {notification.text}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {notification.time}
+                    {notification.date}
                   </p>
                 </div>
               ))}

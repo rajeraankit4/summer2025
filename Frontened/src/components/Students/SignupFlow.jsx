@@ -57,9 +57,9 @@ const SignupFlow = () => {
     switch (currentStep) {
       case 1:
         return <EmailVerification data={signupData} updateData={updateSignupData} onNext={nextStep} />;
-      // case 2:
-      //   return <PersonalDetails data={signupData} updateData={updateSignupData} onNext={nextStep} onPrev={prevStep} />;
       case 2:
+        return <PersonalDetails data={signupData} updateData={updateSignupData} onNext={nextStep} onPrev={prevStep} />;
+      case 3:
         return <DocumentUpload data={signupData} updateData={updateSignupData} onPrev={prevStep} />;
       default:
         return null;

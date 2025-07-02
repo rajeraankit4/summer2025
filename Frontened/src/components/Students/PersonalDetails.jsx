@@ -3,18 +3,18 @@ import { User, ArrowRight, ArrowLeft, Home, Phone, Calendar, MapPin, GraduationC
 
 const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   const [formData, setFormData] = useState({
-    firstName: data.firstName || '',
-    lastName: data.lastName || '',
-    phone: data.phone || '',
-    dateOfBirth: data.dateOfBirth || '',
-    address: data.address || '',
-    city: data.city || '',
-    state: data.state || '',
-    zipCode: data.zipCode || '',
-    studentId: data.studentId || '',
-    hostelBlock: data.hostelBlock || '',
-    roomNumber: data.roomNumber || '',
-    mealPlan: data.mealPlan || '',
+    firstName: data.firstName || 'John',
+    lastName: data.lastName || 'Doe',
+    phone: data.phone || '(555) 123-4567',
+    dateOfBirth: data.dateOfBirth || '2000-01-01',
+    address: data.address || '123 Main Street',
+    city: data.city || 'New York',
+    state: data.state || 'NY',
+    zipCode: data.zipCode || '10001',
+    studentId: data.studentId || 'STU123456',
+    hostelBlock: data.hostelBlock || 'A Block',
+    roomNumber: data.roomNumber || '101',
+    mealPlan: data.mealPlan || 'basic',
     dietaryRestrictions: data.dietaryRestrictions || ''
   });
   const [errors, setErrors] = useState({});

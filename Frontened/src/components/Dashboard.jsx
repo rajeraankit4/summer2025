@@ -3,55 +3,6 @@ import { Users, UtensilsCrossed, ShoppingCart, IndianRupee } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-
-const mealData = [
-  { day: 'Mon', meals: 280 },
-  { day: 'Tue', meals: 300 },
-  { day: 'Wed', meals: 320 },
-  { day: 'Thu', meals: 310 },
-  { day: 'Fri', meals: 290 },
-  { day: 'Sat', meals: 340 },
-  { day: 'Sun', meals: 280 },
-];
-
-const revenueData = [
-  { day: 'Mon', revenue: 65000 },
-  { day: 'Tue', revenue: 70000 },
-  { day: 'Wed', revenue: 75000 },
-  { day: 'Thu', revenue: 72000 },
-  { day: 'Fri', revenue: 68000 },
-  { day: 'Sat', revenue: 80000 },
-  { day: 'Sun', revenue: 67000 },
-];
-
-
-const stats = [
-  {
-    title: 'Total Students',
-    value: '120',
-    icon: <Users className="text-white w-6 h-6" />,
-    bg: 'from-indigo-500 to-indigo-700',
-  },
-  {
-    title: 'Meals Today',
-    value: '320',
-    icon: <UtensilsCrossed className="text-white w-6 h-6" />,
-    bg: 'from-green-400 to-green-600',
-  },
-  {
-    title: 'Canteen Orders',
-    value: '145',
-    icon: <ShoppingCart className="text-white w-6 h-6" />,
-    bg: 'from-yellow-400 to-yellow-600',
-  },
-  {
-    title: 'Revenue (₹)',
-    value: '82,000',
-    icon: <IndianRupee className="text-white w-6 h-6" />,
-    bg: 'from-pink-500 to-pink-700',
-  },
-];
-
 const StatCard = ({ title, value, icon, bg }) => (
   <div className={`rounded-xl shadow-md p-5 bg-gradient-to-br ${bg} hover:scale-105 transform transition-all duration-300`}>
     <div className="flex items-center justify-between">
@@ -65,6 +16,62 @@ const StatCard = ({ title, value, icon, bg }) => (
 );
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    totalStudents: 1200,
+    mealsToday: 350,
+    canteenOrders: 150,
+    revenue: 45000,
+    mealData: [
+      { day: 'Mon', meals: 50 },
+      { day: 'Tue', meals: 60 },
+      { day: 'Wed', meals: 55 },
+      { day: 'Thu', meals: 70 },
+      { day: 'Fri', meals: 65 },
+      { day: 'Sat', meals: 40 },
+      { day: 'Sun', meals: 30 },
+    ],
+    revenueData: [
+      { day: 'Mon', revenue: 6000 },
+      { day: 'Tue', revenue: 7000 },
+      { day: 'Wed', revenue: 6500 },
+      { day: 'Thu', revenue: 8000 },
+      { day: 'Fri', revenue: 7500 },
+      { day: 'Sat', revenue: 4000 },
+      { day: 'Sun', revenue: 3000 },
+    ],
+  });
+
+  if (!stats) {
+    return <div>Loading...</div>;
+  }
+
+  const statCards = [
+    {
+      title: 'Total Students',
+      value: stats.totalStudents,
+      icon: <Users className="text-white w-6 h-6" />,
+      bg: 'from-indigo-500 to-indigo-700',
+    },
+    {
+      title: 'Meals Today',
+      value: stats.mealsToday,
+      icon: <UtensilsCrossed className="text-white w-6 h-6" />,
+      bg: 'from-green-400 to-green-600',
+    },
+    {
+      title: 'Canteen Orders',
+      value: stats.canteenOrders,
+      icon: <ShoppingCart className="text-white w-6 h-6" />,
+      bg: 'from-yellow-400 to-yellow-600',
+    },
+    {
+      title: 'Revenue (₹)',
+      value: stats.revenue.toLocaleString('en-IN'),
+      icon: <IndianRupee className="text-white w-6 h-6" />,
+      bg: 'from-pink-500 to-pink-700',
+    },
+  ];
+
   return (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -72,7 +79,7 @@ export default function Dashboard() {
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat) => (
+      {statCards.map((stat) => (
         <StatCard
           key={stat.title}
           title={stat.title}
@@ -87,7 +94,7 @@ export default function Dashboard() {
       <div className="bg-white p-4 rounded-xl shadow-md">
         <h2 className="text-lg font-semibold mb-4">Meals Served This Week</h2>
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={mealData}>
+          <LineChart data={stats.mealData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="day" />
             <YAxis />
@@ -100,7 +107,7 @@ export default function Dashboard() {
       <div className="bg-white p-4 rounded-xl shadow-md">
         <h2 className="text-lg font-semibold mb-4">Revenue This Week</h2>
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={revenueData}>
+          <LineChart data={stats.revenueData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="day" />
             <YAxis />

@@ -12,6 +12,7 @@ import {
   CreditCard,
   Star,
 } from "lucide-react";
+import axios from "../../api/axiosConfig";
 
 const studentNavItems = [
   {
@@ -49,17 +50,21 @@ const studentNavItems = [
 export default function StudentLayout() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // Mock student data - this would come from context/props in real app
-  const currentStudent = {
-    name: "Rajesh Kumar",
-    email: "rajesh@student.com",
-    hostelNo: "B-Block",
-    room: "B-204",
-    profilePic: "/src/assets/Uietlogo.png", // Using UIET logo as dummy profile pic
-  };
+  const [currentStudent, setCurrentStudent] = useState(null);
 
   useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        // You would typically get the student's ID from auth context
+        const studentId = "some-student-id"; // Replace with actual ID
+        const res = await axios.get(`/api/students/${studentId}`);
+        setCurrentStudent(res.data);
+      } catch (err) {
+        console.error("Failed to fetch student data:", err);
+      }
+    };
+    fetchStudentData();
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpen(false);
@@ -68,6 +73,10 @@ export default function StudentLayout() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (!currentStudent) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -102,16 +111,16 @@ export default function StudentLayout() {
           <div className="bg-white bg-opacity-10 rounded-lg p-4">
             <div className="flex items-center space-x-3">
               <img
-                src={currentStudent.profilePic}
+                src={currentStudent.profilePic || "/src/assets/Uietlogo.png"}
                 alt="Profile"
                 className="h-10 w-10 rounded-full object-cover bg-white p-1"
               />
               <div>
                 <p className="text-sm font-medium text-white">
-                  {currentStudent.name}
+                  {currentStudent.firstName} {currentStudent.lastName}
                 </p>
                 <p className="text-xs text-white text-opacity-80">
-                  {currentStudent.hostelNo} - {currentStudent.room}
+                  {currentStudent.hostelBlock} - {currentStudent.roomNumber}
                 </p>
               </div>
             </div>
@@ -152,12 +161,12 @@ export default function StudentLayout() {
                 className="flex items-center gap-2 text-gray-700 hover:text-gray-900 focus:outline-none"
               >
                 <img
-                  src={currentStudent.profilePic}
+                  src={currentStudent.profilePic || "/src/assets/Uietlogo.png"}
                   alt="Profile"
                   className="h-8 w-8 rounded-full object-cover bg-gray-100 p-1"
                 />
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">{currentStudent.name}</p>
+                  <p className="text-sm font-medium">{currentStudent.firstName} {currentStudent.lastName}</p>
                   <p className="text-xs text-gray-500">
                     {currentStudent.email}
                   </p>

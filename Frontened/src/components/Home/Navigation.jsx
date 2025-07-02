@@ -28,7 +28,7 @@ const Navigation = () => {
             <a href="#about" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">About</a>
             <a href="#contact" className="text-gray-700 hover:text-[#ee8d4a] transition-colors">Contact</a>
             <button
-              onClick={() => navigate("/login")} // ✅ Corrected
+              onClick={() => navigate("/loginhub")} // ✅ Corrected
               className="bg-[#ee8d4a] text-white px-6 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors"
             >
               login
@@ -53,7 +53,7 @@ const Navigation = () => {
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
-                  navigate("/login");
+                  navigate("/loginhub");
                 }}
                 className="w-full text-left bg-[#ee8d4a] text-white px-3 py-2 rounded-lg hover:bg-[#d67a3a] transition-colors"
               >

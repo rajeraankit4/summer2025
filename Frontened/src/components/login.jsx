@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosConfig";
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+const Login = ({ role }) => {
+  const [formData, setFormData] = useState({ email: "", password: "", role });
   const navigate = useNavigate();
   const [error, setError] = useState(null);
 
@@ -17,21 +17,23 @@ const Login = () => {
       const res = await axios.post("/api/auth/login", formData);
       if (res.data.success) {
         alert(res.data.message);
-        navigate("/dashboard");
+        if (res.data.user.role === "student") {
+          navigate("/student/dashboard");
+        } else {
+          // Redirect all admin roles to superadmin dashboard for now
+          navigate("/admin/superadmin/dashboard");
+        }
       } else {
         setError(res.data.error);
       }
-      alert("Login successful");
-    
     } catch (err) {
       setError(err.response?.data?.error || "Login failed");
-      alert("Login failed");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-3xl font-bold text-center mb-8">Log in</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">{role ? `${role.charAt(0).toUpperCase() + role.slice(1)} Login` : "Log in"}</h2>
 
       <label className="block relative">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">

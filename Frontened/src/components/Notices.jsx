@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axiosConfig';
 
 const NoticeBoard = () => {
-  const [notices, setNotices] = useState([
-    { text: 'hostel fee payment...', date: '18 Jun 4:10 PM' },
-    { text: 'Mess Annual Function on 18 May 2025...', date: '12 May 9:16 PM' },
-  ]);
+  const [notices, setNotices] = useState([]);
   const [newNotice, setNewNotice] = useState('');
 
-  const handleAddNotice = () => {
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const res = await axios.get('/api/notices');
+        setNotices(res.data.reverse());
+      } catch (err) {
+        console.error('Failed to fetch notices:', err);
+      }
+    };
+    fetchNotices();
+  }, []);
+
+  const handleAddNotice = async () => {
     if (newNotice.trim() !== '') {
       const now = new Date();
       const formattedDate = now.toLocaleString('en-GB', {
@@ -17,8 +27,15 @@ const NoticeBoard = () => {
         minute: '2-digit',
         hour12: true,
       });
-      setNotices([{ text: newNotice, date: formattedDate }, ...notices]);
-      setNewNotice('');
+      const noticeData = { text: newNotice, date: formattedDate };
+
+      try {
+        await axios.post('/api/notices', noticeData);
+        setNotices([noticeData, ...notices]);
+        setNewNotice('');
+      } catch (err) {
+        console.error('Failed to add notice:', err);
+      }
     }
   };
 

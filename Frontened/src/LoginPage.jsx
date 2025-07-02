@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import FloatingImages from "./components/FloatingImages";
@@ -8,11 +8,13 @@ import logo1 from "./assets/Uietlogo.png";
 import { useEffect } from "react";
 
 const LoginPage = ({ mode = "login" }) => {
-const [showLogin, setShowLogin] = useState(true);
+  const [showLogin, setShowLogin] = useState(true);
+  const { role } = useParams();
 
-useEffect(() => {
-  setShowLogin(mode === "login");
-}, [mode]);
+  useEffect(() => {
+    setShowLogin(mode === "login" || role);
+  }, [mode, role]);
+
   const toggleLogin = () => setShowLogin(!showLogin);
   const navigate = useNavigate();
 
@@ -44,14 +46,24 @@ useEffect(() => {
       {/* Right Side */}
       <div className="w-1/2 flex flex-col justify-center items-center rounded-l-[60px] bg-white p-12">
         <div className="w-full max-w-md">
-          {showLogin ? <Login /> : <Signup />}
-          <div className="text-center text-gray-400 my-4">Or</div>
-          <button
-            onClick={toggleLogin}
-            className="w-full bg-gray-200 text-black py-3 rounded-full font-semibold"
-          >
-            {showLogin ? "Switch to Sign Up" : "Switch to Log In"}
-          </button>
+          {mode === "signup" ? (
+            <Signup />
+          ) : (
+            <>
+              <Login role={role || mode} />
+              {mode !== "student" && (
+                <>
+                  <div className="text-center text-gray-400 my-4">Or</div>
+                  <button
+                    onClick={toggleLogin}
+                    className="w-full bg-gray-200 text-black py-3 rounded-full font-semibold"
+                  >
+                    {showLogin ? "Switch to Sign Up" : "Switch to Log In"}
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

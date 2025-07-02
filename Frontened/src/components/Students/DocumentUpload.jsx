@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Image, X, Check, ArrowLeft, UtensilsCrossed, GraduationCap, CreditCard } from 'lucide-react';
-
 const DocumentUpload = ({ data, updateData, onPrev }) => {
-  const [documents, setDocuments] = useState(data.documents || []);
+  const [documents, setDocuments] = useState(data.documents || [
+    { name: 'student_id_card.jpg', size: 102400, type: 'image/jpeg' },
+    { name: 'hostel_allotment_letter.pdf', size: 204800, type: 'application/pdf' },
+    { name: 'fee_payment_receipt.png', size: 51200, type: 'image/png' },
+  ]);
   const [dragActive, setDragActive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -115,11 +118,40 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
+    // Mock submission delay
     setTimeout(() => {
-      setIsSubmitting(false);
       setIsComplete(true);
-    }, 2000);
+      setIsSubmitting(false);
+    }, 1500);
+
+    // Commented out actual API call
+    /*
+    const formData = new FormData();
+    for (const key in data) {
+      if (key !== 'documents') {
+        formData.append(key, data[key]);
+      }
+    }
+    documents.forEach((doc) => {
+      formData.append('documents', doc);
+    });
+
+    try {
+      const res = await axios.post('/api/auth/complete-signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (res.data.message) {
+        setIsComplete(true);
+      }
+    } catch (err) {
+      console.error('Signup completion failed:', err.response?.data || err);
+      alert(err.response?.data?.error || 'Signup failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+    */
   };
 
   if (isComplete) {
@@ -250,7 +282,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
             <Upload className="w-10 h-10 text-orange-600" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Drop your files here, or{' '}
+            Drop your files here, or''
             <label className="text-orange-600 hover:text-orange-700 cursor-pointer font-bold underline decoration-2 underline-offset-2">
               browse files
               <input

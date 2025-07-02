@@ -6,7 +6,6 @@ import {
   ArrowRight,
   UtensilsCrossed
 } from 'lucide-react';
-
 const EmailVerification = ({ data, updateData, onNext }) => {
   const sectionRef = useRef(null);
   const [email, setEmail] = useState(data.email || '');
@@ -15,6 +14,7 @@ const EmailVerification = ({ data, updateData, onNext }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [timer, setTimer] = useState(0);
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,12 +37,15 @@ const EmailVerification = ({ data, updateData, onNext }) => {
     if (!email) return setErrors({ email: 'Email is required' });
     if (!validateEmail(email)) return setErrors({ email: 'Please enter a valid email address' });
 
-    // Simulate API call
-    setIsEmailSent(true);
-    setTimer(60);
-    updateData({ email });
-
-    console.log('Sending verification code to:', email);
+    try {
+      // await axios.post('/api/auth/send-verification-code', { email });
+      setIsEmailSent(true);
+      setTimer(60);
+      updateData({ email });
+      setSuccessMessage("Verification code sent successfully!");
+    } catch (err) {
+      setErrors({ email: err.response?.data?.error || 'Failed to send verification code' });
+    }
   };
 
   const verifyCode = async () => {
@@ -51,17 +54,19 @@ const EmailVerification = ({ data, updateData, onNext }) => {
     if (verificationCode.length !== 6) return setErrors({ code: 'Verification code must be 6 digits' });
 
     setIsVerifying(true);
-
-    setTimeout(() => {
+    try {
+      // await axios.post('/api/auth/verify-code', { email, verificationCode });
       setIsVerifying(false);
       updateData({ verificationCode });
       onNext();
-    }, 1500);
+    } catch (err) {
+      setIsVerifying(false);
+      setErrors({ code: err.response?.data?.error || 'Invalid verification code' });
+    }
   };
 
   const resendCode = () => {
-    setTimer(60);
-    console.log('Resending verification code to:', email);
+    sendVerificationCode();
   };
 
   return (
