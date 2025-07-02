@@ -3,6 +3,7 @@ import LandingPage from './Components/Pages/LandingPage/LandingPage';
 import NotFound from './Components/NotFound';
 import AdminRoutes from './Components/Pages/Adminroutesdef/Adminroutes';
 import LoginPage from "./LoginPage";
+import SignupFlow from "./components/Students/SignupFlow";
 
 const App = () => {
   const user = {
@@ -14,7 +15,7 @@ const App = () => {
    <Routes>
   <Route path="/" element={<LandingPage />} />
   <Route path="/signup" element={<LoginPage mode="signup" />} />
-  <Route path="/login" element={<LoginPage mode="login" />} />
+  <Route path="/student-signup" element={<SignupFlow/>} />
   <Route
     path="/admin/*"
     element={
