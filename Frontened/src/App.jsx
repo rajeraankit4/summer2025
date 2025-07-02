@@ -2,13 +2,14 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from './Components/Pages/LandingPage/LandingPage';
 import NotFound from './Components/NotFound';
 import AdminRoutes from './Components/Pages/Adminroutesdef/Adminroutes';
+import StudentRoutes from './components/Pages/Studentroutesdef/StudentRoutes';
 import LoginPage from "./LoginPage";
 import SignupFlow from "./components/Students/SignupFlow";
 
 const App = () => {
   const user = {
     isLoggedIn: true,          // 🔒 Set to false if not logged in
-    role: "superadmin",        // Can be "superadmin", "canteenadmin", or "messadmin"
+    role: "student",        // Can be "student", "superadmin", "canteenadmin", or "messadmin"
   };
 
   return (
@@ -17,9 +18,19 @@ const App = () => {
   <Route path="/signup" element={<LoginPage mode="signup" />} />
   <Route path="/student-signup" element={<SignupFlow/>} />
   <Route
+    path="/student/*"
+    element={
+      user.isLoggedIn && user.role === "student" ? (
+        <StudentRoutes />
+      ) : (
+        <Navigate to="/login" replace />
+      )
+    }
+  />
+  <Route
     path="/admin/*"
     element={
-      user.isLoggedIn ? (
+      user.isLoggedIn && (user.role === "superadmin" || user.role === "canteenadmin" || user.role === "messadmin") ? (
         <AdminRoutes role={user.role} />
       ) : (
         <Navigate to="/login" replace />
