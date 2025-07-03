@@ -11,7 +11,6 @@ import LoginPage from "./LoginPage";
 import SignupFlow from "./Components/Students/SignupFlow";
 import StudentLogin from "./Components/Students/StudentLogin";
 import StudentSignup from "./Components/Students/StudentSignup";
-import TestLogin from "./Components/TestLogin";
 
 const AppRoutes = () => {
   const { user, isLoggedIn } = useAuth();
@@ -19,7 +18,6 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/test-login" element={<TestLogin />} />
       <Route path="/loginhub" element={<LoginHub />} />
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/admin-login-form" element={<AdminLoginForm />} />

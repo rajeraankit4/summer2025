@@ -1,11 +1,25 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 // import axios from "../api/axiosConfig";
 
 const AdminLoginForm = () => {
-  const [formData, setFormData] = useState({ email: "admin@gmail.com", password: "admin", role: "superadmin" });
+  const [searchParams] = useSearchParams();
+  const selectedRole = searchParams.get("role") || "superadmin";
+  const [formData, setFormData] = useState({
+    email: "admin@gmail.com",
+    password: "admin",
+    role: selectedRole,
+  });
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  // Update formData when role changes
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, role: selectedRole }));
+  }, [selectedRole]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,15 +27,17 @@ const AdminLoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // const res = await axios.post("/api/auth/login", formData);
-      // if (res.data.success) {
-      //   alert(res.data.message);
-      //   navigate("/admin/superadmin/dashboard");
-      // } else {
-      //   setError(res.data.error);
-      // }
-      // Mock login success
-      // alert("Logged in as admin (mock)");
+      // Mock admin login success
+      const userData = {
+        role: formData.role,
+        name: `${
+          formData.role.charAt(0).toUpperCase() + formData.role.slice(1)
+        } Admin`,
+        email: formData.email,
+        id: `ADMIN_${formData.role.toUpperCase()}_001`,
+      };
+
+      login(userData);
       setSuccessMessage("Logged in successfully!");
       setTimeout(() => {
         navigate("/admin");
@@ -31,14 +47,27 @@ const AdminLoginForm = () => {
     }
   };
 
-  const [successMessage, setSuccessMessage] = React.useState(null);
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-8">
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-md w-full p-8 bg-gradient-to-r from-orange-50 to-amber-50 rounded-3xl shadow-lg">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 max-w-md w-full p-8 bg-gradient-to-r from-orange-50 to-amber-50 rounded-3xl shadow-lg"
+      >
         <h2 className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 mb-8">
           Admin Login
         </h2>
+
+        {/* Role Display */}
+        <div className="text-center mb-4">
+          <span className="inline-block px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+            Logging in as:{" "}
+            {formData.role === "superadmin"
+              ? "Super Admin"
+              : formData.role === "messadmin"
+              ? "Mess Admin"
+              : "Canteen Admin"}
+          </span>
+        </div>
 
         <label className="block relative">
           <input
@@ -64,7 +93,9 @@ const AdminLoginForm = () => {
           />
         </label>
 
-        {error && <p className="text-red-600 text-center font-semibold">{error}</p>}
+        {error && (
+          <p className="text-red-600 text-center font-semibold">{error}</p>
+        )}
 
         <button
           type="submit"
