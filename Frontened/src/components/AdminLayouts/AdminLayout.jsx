@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { UserCircle, ChevronDown } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import {
   Users,
   Utensils,
@@ -40,6 +41,14 @@ const navItems = [
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/loginhub");
+    setOpen(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,11 +94,7 @@ export default function AdminLayout() {
         {/* Header */}
         <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img
-              src="/PU_Logo.png"
-              alt="PU Logo"
-              className="h-16 w-auto"
-            />
+            <img src="/PU_Logo.png" alt="PU Logo" className="h-16 w-auto" />
             <h1 className="text-3xl font-semibold text-gray-800">
               Baba Banda Singh Bahadur Boys Hostel 8
             </h1>
@@ -109,13 +114,23 @@ export default function AdminLayout() {
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border">
                 <ul className="py-1 text-sm text-gray-700">
                   <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    View Profile
+                    <NavLink
+                      to="/admin/settings"
+                      className="flex items-center space-x-2"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </NavLink>
                   </li>
-                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    Settings
-                  </li>
+                  <hr className="my-1" />
                   <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-600">
-                    Logout
+                    <div
+                      className="flex items-center space-x-2"
+                      onClick={handleLogout}
+                    >
+                      <span>Logout</span>
+                    </div>
                   </li>
                 </ul>
               </div>
