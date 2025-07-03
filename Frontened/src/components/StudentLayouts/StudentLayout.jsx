@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { UserCircle, ChevronDown } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import {
   Home,
   UtensilsCrossed,
@@ -50,28 +51,20 @@ const studentNavItems = [
 export default function StudentLayout() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const [currentStudent, setCurrentStudent] = useState(null);
+  const { user, logout } = useAuth();
+
+  // Use user data from auth context
+  const currentStudent = user || {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+    studentId: "ST001",
+    hostelBlock: "Block A",
+    roomNumber: "101",
+    profilePic: null,
+  };
 
   useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        // Temporarily using mock data instead of API call
-        const mockStudent = {
-          firstName: "John",
-          lastName: "Doe",
-          email: "john@example.com",
-          studentId: "ST001",
-          hostelBlock: "Block A",
-          roomNumber: "101",
-          profilePic: null,
-        };
-        setCurrentStudent(mockStudent);
-      } catch (err) {
-        console.error("Failed to fetch student data:", err);
-      }
-    };
-    fetchStudentData();
-
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpen(false);
@@ -215,7 +208,10 @@ export default function StudentLayout() {
                     </li>
                     <hr className="my-1" />
                     <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-600">
-                      <div className="flex items-center space-x-2">
+                      <div
+                        className="flex items-center space-x-2"
+                        onClick={logout}
+                      >
                         <span>Logout</span>
                       </div>
                     </li>

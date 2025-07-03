@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import LandingPage from "./Components/Pages/LandingPage/LandingPage";
 import NotFound from "./Components/NotFound";
 import AdminRoutes from "./Components/Pages/Adminroutesdef/Adminroutes";
@@ -10,16 +11,15 @@ import LoginPage from "./LoginPage";
 import SignupFlow from "./Components/Students/SignupFlow";
 import StudentLogin from "./Components/Students/StudentLogin";
 import StudentSignup from "./Components/Students/StudentSignup";
+import TestLogin from "./Components/TestLogin";
 
-const App = () => {
-  const user = {
-    isLoggedIn: true, // 🔒 Set to false if not logged in
-    role: "superadmin", // Can be "student", "superadmin", "canteenadmin", or "messadmin"
-  };
+const AppRoutes = () => {
+  const { user, isLoggedIn } = useAuth();
 
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/test-login" element={<TestLogin />} />
       <Route path="/loginhub" element={<LoginHub />} />
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/admin-login-form" element={<AdminLoginForm />} />
@@ -30,7 +30,7 @@ const App = () => {
       <Route
         path="/student/*"
         element={
-          user.isLoggedIn && user.role === "student" ? (
+          isLoggedIn && user?.role === "student" ? (
             <StudentRoutes />
           ) : (
             <Navigate to="/loginhub" replace />
@@ -40,10 +40,10 @@ const App = () => {
       <Route
         path="/admin/*"
         element={
-          user.isLoggedIn &&
-          (user.role === "superadmin" ||
-            user.role === "canteenadmin" ||
-            user.role === "messadmin") ? (
+          isLoggedIn &&
+          (user?.role === "superadmin" ||
+            user?.role === "canteenadmin" ||
+            user?.role === "messadmin") ? (
             <AdminRoutes role={user.role} />
           ) : (
             <Navigate to="/loginhub" replace />
@@ -52,6 +52,14 @@ const App = () => {
       />
       <Route path="*" element={<NotFound />} />
     </Routes>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 };
 
