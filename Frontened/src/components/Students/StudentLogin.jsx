@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 const StudentLogin = () => {
-  const [formData, setFormData] = useState({ email: "", password: "", role: "student" });
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    role: "student",
+  });
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
@@ -12,14 +18,18 @@ const StudentLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // const res = await axios.post("/api/auth/login", formData);
-      // if (res.data.success) {
-      //   alert(res.data.message);
-      //   navigate("/student/dashboard");
-      // } else {
-      //   setError(res.data.error);
-      // }
-      // Mock login success
+      // Mock student login success
+      const userData = {
+        role: "student",
+        firstName: "John",
+        lastName: "Doe",
+        email: formData.email,
+        studentId: "ST001",
+        hostelBlock: "Block A",
+        roomNumber: "101",
+      };
+
+      login(userData);
       setSuccessMessage("Logged in successfully!");
       setTimeout(() => {
         navigate("/student/dashboard");
@@ -31,7 +41,10 @@ const StudentLogin = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-8 space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-md w-full p-8 bg-gradient-to-r from-orange-50 to-amber-50 rounded-3xl shadow-lg">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 max-w-md w-full p-8 bg-gradient-to-r from-orange-50 to-amber-50 rounded-3xl shadow-lg"
+      >
         <h2 className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 mb-8">
           Student Login
         </h2>
@@ -60,7 +73,9 @@ const StudentLogin = () => {
           />
         </label>
 
-        {error && <p className="text-red-600 text-center font-semibold">{error}</p>}
+        {error && (
+          <p className="text-red-600 text-center font-semibold">{error}</p>
+        )}
 
         <button
           type="submit"
@@ -72,7 +87,10 @@ const StudentLogin = () => {
       <div className="text-center">
         <p className="text-lg">
           Don't have an account?{" "}
-          <a href="/student-signup" className="text-orange-600 font-semibold hover:underline">
+          <a
+            href="/student-signup"
+            className="text-orange-600 font-semibold hover:underline"
+          >
             Sign up
           </a>
         </p>

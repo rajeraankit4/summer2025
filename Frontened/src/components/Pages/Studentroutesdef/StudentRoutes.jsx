@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import StudentLayout from "../../StudentLayouts/StudentLayout";
 import StudentDashboard from "../../StudentDashboard";
 
@@ -142,20 +143,28 @@ const StudentNotifications = () => (
 
 const StudentProfile = () => {
   const [student, setStudent] = useState(null);
-  const [phone, setPhone] = useState('');
-  const [profilePic, setProfilePic] = useState('');
+  const [phone, setPhone] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        // Replace with actual student ID from auth context
-        const studentId = "some-student-id"; 
-        const res = await axios.get(`/api/students/${studentId}`);
-        setStudent(res.data);
-        setPhone(res.data.phone);
-        setProfilePic(res.data.profilePic || "/src/assets/Uietlogo.png");
+        // Temporarily using mock data instead of API call
+        const mockStudent = {
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+          studentId: "ST001",
+          hostelBlock: "Block A",
+          roomNumber: "101",
+          phone: "9876543210",
+          profilePic: "/src/assets/Uietlogo.png",
+        };
+        setStudent(mockStudent);
+        setPhone(mockStudent.phone);
+        setProfilePic(mockStudent.profilePic);
       } catch (err) {
-        console.error('Failed to fetch student profile:', err);
+        console.error("Failed to fetch student profile:", err);
       }
     };
     fetchStudent();
@@ -163,12 +172,11 @@ const StudentProfile = () => {
 
   const handleUpdateProfile = async () => {
     try {
-      const studentId = "some-student-id"; 
-      await axios.put(`/api/students/${studentId}`, { phoneNo: phone, profilePic });
-      alert('Profile updated successfully!');
+      // Temporarily disabled API call - just show success message
+      alert("Profile updated successfully! (Mock mode)");
     } catch (err) {
-      console.error('Failed to update profile:', err);
-      alert('Failed to update profile.');
+      console.error("Failed to update profile:", err);
+      alert("Failed to update profile.");
     }
   };
 
@@ -188,10 +196,19 @@ const StudentProfile = () => {
               alt="Profile"
               className="h-24 w-24 rounded-full mx-auto mb-4 object-cover bg-gray-100 p-2"
             />
-            <h2 className="text-xl font-semibold">{student.firstName} {student.lastName}</h2>
-            <p className="text-gray-600">{student.hostelBlock}, Room {student.roomNumber}</p>
+            <h2 className="text-xl font-semibold">
+              {student.firstName} {student.lastName}
+            </h2>
+            <p className="text-gray-600">
+              {student.hostelBlock}, Room {student.roomNumber}
+            </p>
           </div>
-          <button onClick={() => alert('Feature to change profile picture not implemented yet.')} className="w-full bg-blue-600 text-white py-2 rounded-lg">
+          <button
+            onClick={() =>
+              alert("Feature to change profile picture not implemented yet.")
+            }
+            className="w-full bg-blue-600 text-white py-2 rounded-lg"
+          >
             Change Profile Picture
           </button>
         </div>
@@ -232,7 +249,10 @@ const StudentProfile = () => {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
               />
             </div>
-            <button onClick={handleUpdateProfile} className="w-full bg-green-600 text-white py-2 rounded-lg">
+            <button
+              onClick={handleUpdateProfile}
+              className="w-full bg-green-600 text-white py-2 rounded-lg"
+            >
               Update Profile
             </button>
           </div>
