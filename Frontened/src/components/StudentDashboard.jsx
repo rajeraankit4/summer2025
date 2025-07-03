@@ -9,10 +9,17 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        // You would typically get the student's ID from auth context
-        const studentId = "some-student-id"; // Replace with actual ID
-        const res = await axios.get(`/api/students/${studentId}`);
-        setCurrentUser(res.data);
+        // Temporarily using mock data instead of API call
+        const mockStudent = {
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+          studentId: "ST001",
+          hostelBlock: "Block A",
+          roomNumber: "101",
+          profilePic: null,
+        };
+        setCurrentUser(mockStudent);
       } catch (err) {
         console.error("Failed to fetch student data:", err);
       }
@@ -20,8 +27,19 @@ const StudentDashboard = () => {
 
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get("/api/notices");
-        setNotifications(res.data.reverse());
+        // Temporarily using mock data instead of API call
+        const mockNotifications = [
+          {
+            text: "Mess Annual Function on 18 May 2025...",
+            date: "12 May 9:16 PM",
+          },
+          {
+            text: "Hostel fee payment due date extended...",
+            date: "18 Jun 4:10 PM",
+          },
+          { text: "New menu items added this week...", date: "20 Jun 2:30 PM" },
+        ];
+        setNotifications(mockNotifications);
       } catch (err) {
         console.error("Failed to fetch notifications:", err);
       }
@@ -92,9 +110,7 @@ const StudentDashboard = () => {
                   key={notification._id}
                   className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400"
                 >
-                  <p className="text-sm text-gray-800">
-                    {notification.text}
-                  </p>
+                  <p className="text-sm text-gray-800">{notification.text}</p>
                   <p className="text-xs text-gray-500 mt-1">
                     {notification.date}
                   </p>

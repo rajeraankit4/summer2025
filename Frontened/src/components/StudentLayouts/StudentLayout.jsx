@@ -55,10 +55,17 @@ export default function StudentLayout() {
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        // You would typically get the student's ID from auth context
-        const studentId = "some-student-id"; // Replace with actual ID
-        const res = await axios.get(`/api/students/${studentId}`);
-        setCurrentStudent(res.data);
+        // Temporarily using mock data instead of API call
+        const mockStudent = {
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+          studentId: "ST001",
+          hostelBlock: "Block A",
+          roomNumber: "101",
+          profilePic: null,
+        };
+        setCurrentStudent(mockStudent);
       } catch (err) {
         console.error("Failed to fetch student data:", err);
       }
@@ -166,7 +173,9 @@ export default function StudentLayout() {
                   className="h-8 w-8 rounded-full object-cover bg-gray-100 p-1"
                 />
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">{currentStudent.firstName} {currentStudent.lastName}</p>
+                  <p className="text-sm font-medium">
+                    {currentStudent.firstName} {currentStudent.lastName}
+                  </p>
                   <p className="text-xs text-gray-500">
                     {currentStudent.email}
                   </p>
