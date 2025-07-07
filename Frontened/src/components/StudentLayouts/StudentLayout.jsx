@@ -111,7 +111,7 @@ export default function StudentLayout() {
           <div className="bg-white bg-opacity-10 rounded-lg p-4">
             <div className="flex items-center space-x-3">
               <img
-                src={currentStudent.profilePic || "/src/assets/Uietlogo.png"}
+                src={currentStudent.profilePic || "/src/assets/ProfilePic.png"}
                 alt="Profile"
                 className="h-10 w-10 rounded-full object-cover bg-white p-1"
               />
@@ -161,7 +161,7 @@ export default function StudentLayout() {
                 className="flex items-center gap-2 text-gray-700 hover:text-gray-900 focus:outline-none"
               >
                 <img
-                  src={currentStudent.profilePic || "/src/assets/Uietlogo.png"}
+                  src={currentStudent.profilePic || "/src/assets/ProfilePic.png"}
                   alt="Profile"
                   className="h-8 w-8 rounded-full object-cover bg-gray-100 p-1"
                 />

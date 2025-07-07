@@ -1,16 +1,18 @@
 import { Routes, Route } from "react-router-dom";
+import MessAdminLayout from "../../AdminLayouts/MessAdminLayout";
+import ThemedMenuManagement from "../../ThemedMenuManagement";
+import Settings from "../../Settings";
 
-
-
-const MessAdmin = () => {
+const MessAdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<>This is mess admin</>}>
-        {/* <Route path="dashboard" element={<ContentDashboard />} />
-        <Route path="manage" element={<ManageContent />} /> */}
+      <Route path="/" element={<MessAdminLayout />}>
+        <Route index element={<ThemedMenuManagement />} />
+        <Route path="menu" element={<ThemedMenuManagement />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );
 };
 
-export default MessAdmin;
+export default MessAdminRoutes;

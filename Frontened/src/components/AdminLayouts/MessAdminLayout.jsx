@@ -2,48 +2,22 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { UserCircle, ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  Users,
-  Utensils,
-  ScrollText,
-  CreditCard,
-  Megaphone,
-  Settings,
-  Building2,
-} from "lucide-react";
+import { Utensils, Settings } from "lucide-react";
 
 const navItems = [
-  {
-    name: "Dashboard",
-    path: "/admin/dashboard",
-    icon: <Building2 size={18} />,
-  },
-  { name: "Students", path: "/admin/students", icon: <Users size={18} /> },
   {
     name: "Menu Management",
     path: "/admin/menu",
     icon: <Utensils size={18} />,
   },
   {
-    name: "Mess Management",
-    path: "/admin/mess",
-    icon: <Users size={18} />,
+    name: "Settings",
+    path: "/admin/settings",
+    icon: <Settings size={18} />,
   },
-  {
-    name: "Canteen Management",
-    path: "/admin/canteen",
-    icon: <ScrollText size={18} />,
-  },
-  {
-    name: "Billing & Payments",
-    path: "/admin/billing",
-    icon: <CreditCard size={18} />,
-  },
-  { name: "Notices", path: "/admin/notices", icon: <Megaphone size={18} /> },
-  { name: "Settings", path: "/admin/settings", icon: <Settings size={18} /> },
 ];
 
-export default function AdminLayout() {
+export default function MessAdminLayout() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { logout } = useAuth();
@@ -68,10 +42,10 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#ee8d4a] text-white shadow-xl">
+      <aside className="w-64 bg-gradient-to-b from-green-600 to-green-700 text-white shadow-xl">
         <div className="p-6">
           <h2 className="text-2xl font-bold tracking-wide mb-8">
-            🏢 Admin Panel
+            🍽️ Mess Admin
           </h2>
           <nav className="flex flex-col gap-2">
             {navItems.map((item) => (
@@ -81,7 +55,7 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 ${
                     isActive
-                      ? "bg-white text-[#ee8d4a] font-semibold shadow-sm"
+                      ? "bg-white text-green-700 font-semibold shadow-sm"
                       : "hover:bg-white hover:bg-opacity-20"
                   }`
                 }
@@ -97,12 +71,17 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="flex flex-col flex-1">
         {/* Header */}
-        <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
+        <header className="bg-white shadow px-6 py-4 flex justify-between items-center border-b-2 border-green-200">
           <div className="flex items-center gap-3">
             <img src="/PU_Logo.png" alt="PU Logo" className="h-16 w-auto" />
-            <h1 className="text-3xl font-semibold text-gray-800">
-              Baba Banda Singh Bahadur Boys Hostel 8
-            </h1>
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-800">
+                Mess Management System
+              </h1>
+              <p className="text-sm text-green-600 font-medium">
+                Baba Banda Singh Bahadur Boys Hostel 8
+              </p>
+            </div>
           </div>
 
           {/* Profile Dropdown */}
@@ -149,9 +128,8 @@ export default function AdminLayout() {
         </main>
 
         {/* Footer */}
-        <footer className="bg-white text-center text-gray-500 py-3 text-sm border-t">
-          © {new Date().getFullYear()} Hostel Management System • Made by
-          UIETians
+        <footer className="bg-white text-center text-gray-500 py-3 text-sm border-t border-green-200">
+          © {new Date().getFullYear()} Mess Management System • Made by UIETians
         </footer>
       </div>
     </div>
