@@ -4,6 +4,7 @@ import AdminLayout from "../../AdminLayouts/AdminLayout";
 
 import Dashboard from "../../Dashboard";
 import Students from "../../Student";
+import MenuManagement from "../../MenuManagement";
 import MessManagement from "../../MessManagment";
 import CanteenManagement from "../../CanteenManagment";
 import Billing from "../../Billing";
@@ -17,6 +18,7 @@ const SuperAdmin = () => {
         <Route index element={<Dashboard />} /> /admin
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="students" element={<Students />} />
+        <Route path="menu" element={<MenuManagement />} />
         <Route path="mess" element={<MessManagement />} />
         <Route path="canteen" element={<CanteenManagement />} />
         <Route path="billing" element={<Billing />} />

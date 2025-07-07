@@ -20,9 +20,14 @@ const navItems = [
   },
   { name: "Students", path: "/admin/students", icon: <Users size={18} /> },
   {
+    name: "Menu Management",
+    path: "/admin/menu",
+    icon: <Utensils size={18} />,
+  },
+  {
     name: "Mess Management",
     path: "/admin/mess",
-    icon: <Utensils size={18} />,
+    icon: <Users size={18} />,
   },
   {
     name: "Canteen Management",
