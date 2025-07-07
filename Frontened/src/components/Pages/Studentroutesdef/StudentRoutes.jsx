@@ -264,7 +264,7 @@ const StudentProfile = () => {
           hostelBlock: "Block A",
           roomNumber: "101",
           phone: "9876543210",
-          profilePic: "/src/assets/Uietlogo.png",
+          profilePic: "/src/assets/ProfilePic.png",
         };
         setStudent(mockStudent);
         setPhone(mockStudent.phone);
