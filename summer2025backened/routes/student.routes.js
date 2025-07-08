@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", getStudents);
 router.get("/:id", getStudentById);
-router.put("/:id", updateStudentProfile);
+// router.put("/:id", updateStudentProfile);
 router.put("/:id/verify", verifyStudent);
 
 export default router;

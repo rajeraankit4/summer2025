@@ -21,3 +21,24 @@ export const updateMessStaff = async (req, res) => {
     res.status(500).json({ error: "Error updating mess staff", details: err.message });
   }
 };
+
+
+
+
+export const transactionStats = async (req, res) => {
+  try {
+    
+    const stats = await MessStaff.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalTransactions: { $sum: "$transactions" },
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+    res.status(200).json(stats[0] || { totalTransactions: 0, totalAmount: 0 });
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching transaction stats", details: err.message });
+  }
+};  

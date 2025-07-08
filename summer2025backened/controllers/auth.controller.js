@@ -1,99 +1,72 @@
+import Otp from "../models/otp.js";
 import User from "../models/user.model.js";
-import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
+import { sendOtpVerificationEmail } from "../middleware/nodemailer.js";
 
-// Helper to send verification email
-const sendVerificationEmail = async (email, code) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Email Verification Code",
-    text: `Your verification code is: ${code}`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 export const sendVerificationCode = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: "Email already exists" });
+    const otp = generateOtp();
+    await sendOtpVerificationEmail(email, otp);
+    await Otp.create({ email, otp });
 
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    await sendVerificationEmail(email, verificationCode);
-
-    const newUser = new User({ email, verificationCode });
-    await newUser.save();
-
-    res.status(200).json({ message: "Verification code sent" });
+    console.log(`OTP ${otp} sent to ${email}`);
+    res.status(200).json({ message: "Verification code sent successfully" });
   } catch (err) {
-    res.status(500).json({ error: "Error sending verification code", details: err.message });
+    console.error("Error sending OTP:", err);
+    res.status(500).json({ error: "Failed to send verification code", details: err.message });
   }
 };
 
-export const verifyCode = async (req, res) => {
-  const { email, verificationCode } = req.body;
-  if (!email || !verificationCode) return res.status(400).json({ error: "Email and code are required" });
+export const verifySignupOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return res.status(400).json({ error: "Email and OTP required" });
 
   try {
-    const user = await User.findOne({ email, verificationCode });
-    if (!user) return res.status(400).json({ error: "Invalid verification code" });
+    const otpEntry = await Otp.findOne({ email, otp });
+    if (!otpEntry) return res.status(400).json({ error: "Invalid OTP" });
 
-    user.isVerified = true;
-    await user.save();
+    const now = new Date();
+    const created = new Date(otpEntry.createdAt);
+    const minutesDiff = (now - created) / 1000 / 60;
 
-    res.status(200).json({ message: "Email verified successfully" });
+    if (minutesDiff > 10) {
+      await Otp.deleteMany({ email }); // Clean up expired
+      return res.status(400).json({ error: "OTP expired" });
+    }
+
+    await Otp.deleteMany({ email }); // Clean up after success
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified. Proceed to complete signup.",
+      data: {
+        email,
+        verified: true,
+        nextStep: "signupForm"
+      }
+    });
   } catch (err) {
-    res.status(500).json({ error: "Error verifying code", details: err.message });
+    res.status(500).json({ error: "OTP verification failed", details: err.message });
   }
 };
 
-export const completeSignup = async (req, res) => {
-  const { email, ...signupData } = req.body;
+export const resendVerificationCode = async (req, res) => {
+  const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    await Otp.deleteMany({ email });
 
-    const hashedPassword = await bcrypt.hash(signupData.password, 10);
-    
-    Object.assign(user, { ...signupData, password: hashedPassword });
-    await user.save();
+    const otp = generateOtp();
+    await sendOtpVerificationEmail(email, otp);
+    await Otp.create({ email, otp });
 
-    res.status(201).json({ message: "Signup completed successfully" });
+    res.status(200).json({ message: "Verification code resent successfully" });
   } catch (err) {
-    res.status(500).json({ error: "Signup completion error", details: err.message });
-  }
-};
-
-export const loginUser = async (req, res) => {
-  const { email, password, role } = req.body;
-  if (!email || !password || !role)
-    return res.status(400).json({ error: "Email, password, and role are required" });
-
-  try {
-    const user = await User.findOne({ email, role });
-    if (!user || !user.isVerified)
-      return res.status(401).json({ error: "Invalid email, password, or role" });
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch)
-      return res.status(401).json({ error: "Invalid email, password, or role" });
-
-    res.status(200).json({ success: true, message: "Login successful", user: { role: user.role } });
-  } catch (err) {
-    res.status(500).json({ error: "Login error", details: err.message });
+    res.status(500).json({ error: "Failed to resend verification code", details: err.message });
   }
 };
