@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import StudentLayout from "../../StudentLayouts/StudentLayout";
-import StudentDashboard from "../../StudentDashboard";
+import StudentDashboard from "../../../components/StudentDashboard";
 import { getWeeklyMenu } from "../../../api/menuApi";
 
 // Create placeholder components for other student pages
