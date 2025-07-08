@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import axios from "../../api/axiosConfig"; // ✅ Axios instance
+
 const StudentLogin = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -17,19 +19,15 @@ const StudentLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     try {
-      // Mock student login success
-      const userData = {
-        role: "student",
-        firstName: "John",
-        lastName: "Doe",
-        email: formData.email,
-        studentId: "ST001",
-        hostelBlock: "Block A",
-        roomNumber: "101",
-      };
+      const res = await axios.post("auth/login", formData);
+      const { token, user } = res.data;
 
-      login(userData);
+      // Save token in localStorage or context
+      localStorage.setItem("token", token);
+      login(user); // context login
+
       setSuccessMessage("Logged in successfully!");
       setTimeout(() => {
         navigate("/student/dashboard");
