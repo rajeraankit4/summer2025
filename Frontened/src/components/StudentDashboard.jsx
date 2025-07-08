@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { UtensilsCrossed, Bell, Receipt } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosConfig";
 
 const StudentDashboard = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -27,21 +29,24 @@ const StudentDashboard = () => {
 
     const fetchNotifications = async () => {
       try {
-        // Temporarily using mock data instead of API call
-        const mockNotifications = [
-          {
-            text: "Mess Annual Function on 18 May 2025...",
-            date: "12 May 9:16 PM",
-          },
-          {
-            text: "Hostel fee payment due date extended...",
-            date: "18 Jun 4:10 PM",
-          },
-          { text: "New menu items added this week...", date: "20 Jun 2:30 PM" },
-        ];
-        setNotifications(mockNotifications);
+        const response = await axios.get("/api/notices");
+        // Sort by latest first and take only the most recent ones
+        const sortedNotices = response.data.sort(
+          (a, b) =>
+            new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
+        );
+        setNotifications(sortedNotices);
       } catch (err) {
         console.error("Failed to fetch notifications:", err);
+        // Fallback to mock data if API fails
+        const mockNotifications = [
+          {
+            _id: "1",
+            text: "Unable to load latest notices. Please check your connection.",
+            date: "Now",
+          },
+        ];
+        setNotifications(mockNotifications);
       }
     };
 
@@ -102,23 +107,32 @@ const StudentDashboard = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Bell className="h-5 w-5 mr-2" />
-              Recent Notifications
+              Recent Notices
             </h3>
             <div className="space-y-3">
-              {notifications.slice(0, 3).map((notification) => (
-                <div
-                  key={notification._id}
-                  className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400"
-                >
-                  <p className="text-sm text-gray-800">{notification.text}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {notification.date}
-                  </p>
+              {notifications.length === 0 ? (
+                <div className="p-3 bg-gray-50 rounded-lg text-center">
+                  <p className="text-sm text-gray-500">No notices available</p>
                 </div>
-              ))}
+              ) : (
+                notifications.slice(0, 3).map((notification, index) => (
+                  <div
+                    key={notification._id || index}
+                    className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400"
+                  >
+                    <p className="text-sm text-gray-800">{notification.text}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {notification.date}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
-            <button className="w-full mt-4 text-blue-600 text-sm font-medium hover:text-blue-800">
-              View All Notifications
+            <button
+              onClick={() => navigate("/student/notices")}
+              className="w-full mt-4 text-orange-600 text-sm font-medium hover:text-orange-800 transition-colors duration-200"
+            >
+              View All Notices
             </button>
           </div>
         </div>
