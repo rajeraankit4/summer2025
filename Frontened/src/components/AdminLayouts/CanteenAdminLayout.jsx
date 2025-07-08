@@ -2,13 +2,18 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { UserCircle, ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { Utensils, Settings } from "lucide-react";
+import { Utensils, Settings, DollarSign } from "lucide-react";
 
 const navItems = [
   {
     name: "Menu Management",
     path: "/admin/menu",
     icon: <Utensils size={18} />,
+  },
+  {
+    name: "Student Expenses",
+    path: "/admin/expenses",
+    icon: <DollarSign size={18} />,
   },
   {
     name: "Settings",
