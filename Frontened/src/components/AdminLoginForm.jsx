@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-// import axios from "../api/axiosConfig";
+import axios from "../api/axiosConfig"; // ✅ Use custom axios
 
 const AdminLoginForm = () => {
   const [searchParams] = useSearchParams();
   const selectedRole = searchParams.get("role") || "superadmin";
+
   const [formData, setFormData] = useState({
-    email: "admin@gmail.com",
-    password: "admin",
+    email: "",
+    password: "",
     role: selectedRole,
   });
+
   const navigate = useNavigate();
   const { login } = useAuth();
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Update formData when role changes
   useEffect(() => {
     setFormData((prev) => ({ ...prev, role: selectedRole }));
   }, [selectedRole]);
@@ -26,23 +27,23 @@ const AdminLoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      // Mock admin login success
-      const userData = {
-        role: formData.role,
-        name: `${
-          formData.role.charAt(0).toUpperCase() + formData.role.slice(1)
-        } Admin`,
-        email: formData.email,
-        id: `ADMIN_${formData.role.toUpperCase()}_001`,
-      };
+    setError(null);
+    setSuccessMessage(null);
 
-      login(userData);
+    try {
+      const res = await axios.post("auth/login", formData);
+
+      const { token, user } = res.data;
+
+      localStorage.setItem("token", token);
+      login(user);
+
       setSuccessMessage("Logged in successfully!");
       setTimeout(() => {
         navigate("/admin");
       }, 1500);
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.error || "Login failed");
     }
   };
@@ -57,7 +58,6 @@ const AdminLoginForm = () => {
           Admin Login
         </h2>
 
-        {/* Role Display */}
         <div className="text-center mb-4">
           <span className="inline-block px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
             Logging in as:{" "}
@@ -69,29 +69,25 @@ const AdminLoginForm = () => {
           </span>
         </div>
 
-        <label className="block relative">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-5 py-4 rounded-xl border-2 border-orange-300 focus:outline-none focus:ring-4 focus:ring-orange-200 focus:border-orange-500 text-lg"
-          />
-        </label>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          className="w-full px-5 py-4 rounded-xl border-2 border-orange-300"
+        />
 
-        <label className="block relative">
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full px-5 py-4 rounded-xl border-2 border-orange-300 focus:outline-none focus:ring-4 focus:ring-orange-200 focus:border-orange-500 text-lg"
-          />
-        </label>
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          className="w-full px-5 py-4 rounded-xl border-2 border-orange-300"
+        />
 
         {error && (
           <p className="text-red-600 text-center font-semibold">{error}</p>
@@ -99,11 +95,12 @@ const AdminLoginForm = () => {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl font-bold hover:from-orange-600 hover:to-amber-600 transition-shadow shadow-lg"
+          className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl font-bold"
         >
           Log In
         </button>
       </form>
+
       {successMessage && (
         <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg text-center font-semibold">
           {successMessage}
