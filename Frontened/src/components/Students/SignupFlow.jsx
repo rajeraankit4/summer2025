@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Mail,
-  User,
-  FileText,
-  Check,
-  UtensilsCrossed,
-  Coffee,
-  ChefHat
+  Mail, User, FileText, Check,
+  UtensilsCrossed, Coffee, ChefHat
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import { motion, AnimatePresence } from 'framer-motion'; // ✅ NEW
 import EmailVerification from './EmailVerification';
 import PersonalDetails from './PersonalDetails';
 import DocumentUpload from './DocumentUpload';
@@ -46,6 +41,8 @@ const SignupFlow = () => {
   };
 
   const nextStep = () => {
+    if (currentStep === 1 && !signupData.email) return;
+    if (currentStep === 2 && (!signupData.firstName || !signupData.lastName || !signupData.phone)) return;
     if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
@@ -68,7 +65,6 @@ const SignupFlow = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 relative overflow-hidden">
-      {/* Background Icons */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <UtensilsCrossed className="absolute top-20 left-10 w-20 h-20 text-orange-500 rotate-[15deg]" />
         <Coffee className="absolute top-32 right-16 w-16 h-16 text-amber-500 -rotate-[20deg]" />
@@ -77,15 +73,12 @@ const SignupFlow = () => {
       </div>
 
       <div className="relative z-10 px-6 py-12 sm:px-8 md:px-16 max-w-6xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mb-4">
             Student Registration
           </h1>
-          
         </div>
 
-        {/* Step Indicators */}
         <div className="flex flex-col items-center md:flex-row justify-center mb-16 space-y-10 md:space-y-0 md:space-x-10">
           {steps.map((step, index) => {
             const Icon = step.icon;
@@ -96,7 +89,7 @@ const SignupFlow = () => {
               <div key={step.id} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isCompleted
                         ? 'bg-green-500 text-white shadow-md scale-105'
                         : isActive
@@ -129,7 +122,6 @@ const SignupFlow = () => {
           })}
         </div>
 
-        {/* Step Content with Animation */}
         <div className="bg-white/90 backdrop-blur-md border border-orange-100 rounded-3xl p-6 md:p-12 shadow-2xl min-h-[400px]">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -142,24 +134,6 @@ const SignupFlow = () => {
               {renderStep()}
             </motion.div>
           </AnimatePresence>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <div className="flex justify-center items-center flex-wrap gap-6">
-            <div className="flex items-center gap-2">
-              <UtensilsCrossed className="w-4 h-4 text-orange-500" />
-              <span>Fresh Meals Daily</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Coffee className="w-4 h-4 text-amber-500" />
-              <span>24/7 Canteen Access</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ChefHat className="w-4 h-4 text-yellow-500" />
-              <span>Expert Chefs</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

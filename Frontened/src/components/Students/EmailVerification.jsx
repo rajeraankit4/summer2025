@@ -38,7 +38,7 @@ const EmailVerification = ({ data, updateData, onNext }) => {
     if (!validateEmail(email)) return setErrors({ email: 'Please enter a valid email address' });
 
     try {
-      // await axios.post('/api/auth/send-verification-code', { email });
+      await axios.post('/api/auth/send-verification-code', { email });
       setIsEmailSent(true);
       setTimer(60);
       updateData({ email });
@@ -55,7 +55,7 @@ const EmailVerification = ({ data, updateData, onNext }) => {
 
     setIsVerifying(true);
     try {
-      // await axios.post('/api/auth/verify-code', { email, verificationCode });
+      await axios.post('/api/auth/verify-code', { email, verificationCode });
       setIsVerifying(false);
       updateData({ verificationCode });
       onNext();

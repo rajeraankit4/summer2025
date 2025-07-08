@@ -72,7 +72,7 @@ const Login = ({ role }) => {
 
       <button
         type="submit"
-        className="w-full bg-black text-white py-3 rounded-full font-semibold mb-4 hover:bg-gray-800 transition"
+        className="w-full cursor-pointer bg-black text-white py-3 rounded-full font-semibold mb-4 hover:bg-gray-800 transition"
       >
         Log in
       </button>

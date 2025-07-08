@@ -1,108 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Search, XCircle } from 'lucide-react';
-import axios from '../api/axiosConfig';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Students = () => {
-  const [students, setStudents] = useState([]);
-  const [search, setSearch] = useState('');
+const PersonalDetails = () => {
+  const [PersonalDetails, setPersonalDetails] = useState([]);
+  const [statusList, setStatusList] = useState([]); // NEW status state
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const response = await axios.get('/api/students');
-        setStudents(response.data);
-      } catch (err) {
-        console.error('Failed to fetch students:', err);
-      }
-    };
-
-    fetchStudents();
-  }, []);
-
-  const handleVerify = async (id) => {
-    try {
-      await axios.put(`/api/students/${id}/verify`);
-      setStudents(students.map(s => s._id === id ? { ...s, isVerified: true } : s));
-    } catch (err) {
-      console.error('Failed to verify student:', err);
-    }
+  const getAllpersonalDetails = () => {
+    axios
+      .get('http://localhost:5000/api/personaldetail/view')
+      .then((res) => {
+        if (res.data.status) {
+          setPersonalDetails(res.data.personaldetailList);
+          setStatusList(res.data.personaldetailList.map(() => 'No')); // initialize all to No
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching data:', err);
+      });
   };
 
-  const filteredStudents = students.filter((student) =>
-    (student.firstName + ' ' + student.lastName).toLowerCase().includes(search.toLowerCase()) ||
-    student.email.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    getAllpersonalDetails();
+  }, []);
+
+  const handleVerify = (index) => {
+    const updatedStatus = [...statusList];
+    updatedStatus[index] = 'Yes';
+    setStatusList(updatedStatus);
+  };
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold text-gray-800">🎓 Student Management</h1>
+    <div className="max-w-4xl mx-auto">
+      <div className="space-y-6 p-4 md:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold text-gray-800">🎓 Student Management</h1>
 
-      <div className="flex justify-between items-center">
-        <div className="relative w-full max-w-sm">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Search className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+        <div className="flex justify-between items-center">
+          <div className="relative w-full max-w-sm">
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="overflow-auto rounded-lg shadow bg-white">
-        <table className="w-full table-auto border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
-              <th className="px-6 py-4">Name</th>
-              <th className="px-6 py-4">Email</th>
-              <th className="px-6 py-4">Room</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
+        <div className="max-h-[500px] overflow-y-auto overflow-x-auto rounded-lg shadow bg-white">
+  <table className="min-w-full table-auto border-collapse">
+            <thead>
+              <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
+                <th className="px-6 py-4">Name</th>
+                <th className="px-6 py-4">DOB</th>
+                <th className="px-6 py-4">Phone</th>
+                <th className="px-6 py-4">Room</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {PersonalDetails.map((detail, index) => (
                 <tr
-                  key={student._id}
+                  key={index}
                   className="border-b hover:bg-gray-50 transition-all duration-200"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900">{student.firstName} {student.lastName}</td>
-                  <td className="px-6 py-4 text-gray-600">{student.email}</td>
-                  <td className="px-6 py-4 text-gray-600">{student.hostelBlock}-{student.roomNumber}</td>
-                  <td className="px-6 py-4">
-                    {student.isVerified ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">
-                        <CheckCircle className="w-4 h-4" /> Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-yellow-700 bg-yellow-100 rounded-full">
-                        <XCircle className="w-4 h-4" /> Not Verified
-                      </span>
-                    )}
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {detail.firstname} {detail.lastname}
                   </td>
+                  <td className="px-6 py-4 text-gray-600">{detail.DOB}</td>
+                  <td className="px-6 py-4 text-gray-600">{detail.phone}</td>
+                  <td className="px-6 py-4">{detail.roomno}</td>
+
+                  {/* Show Status */}
+                <td className={`px-6 py-4 font-semibold ${statusList[index] === 'Yes' ? 'text-green-500' : 'text-red-500'}`}>
+  {statusList[index] === 'Yes' ? 'Yes' : 'No'}
+</td>
+
+
+                  {/* Action */}
                   <td className="px-6 py-4">
-                    {!student.isVerified && (
-                      <button onClick={() => handleVerify(student._id)} className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-all">
+                    {statusList[index] === 'No' ? (
+                      <button 
+                        onClick={() => handleVerify(index)}
+                        className="text-red-500 hover:underline cursor-pointer"
+                      >
                         Verify
                       </button>
+                    ) : (
+                      <span className="text-green-500 font-semibold">Verified</span>
                     )}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center py-8 text-gray-500">
-                  No students found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Students;
+export default PersonalDetails;
