@@ -33,42 +33,29 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   });
 
   const handleNext = async (e) => {
-    console.log("=== BUTTON CLICKED ===");
-    console.log("Event:", e);
-    console.log("Event type:", e.type);
-    console.log("Event target:", e.target);
-
     // Prevent any default behavior and event propagation
     e.preventDefault();
     e.stopPropagation();
 
-    console.log("handleNext called, isSubmitting:", isSubmitting);
-
     // Prevent double submission
     if (isSubmitting) {
-      console.log("Already submitting, returning");
       return;
     }
 
     try {
-      console.log("Starting submission process");
       setIsSubmitting(true);
 
       // Validate form before saving
       if (!validateForm()) {
-        console.log("Form validation failed");
         setIsSubmitting(false);
         return;
       }
 
-      console.log("Form validation passed, saving data");
       await axios.post(
         "http://localhost:5000/api/personaldetail/insert",
         formData
       );
       toast.success("Personal details saved successfully");
-
-      console.log("Data saved, updating parent and navigating");
 
       // Map the form data to match the parent component's expected field names
       const mappedData = {
@@ -86,17 +73,13 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       };
 
       // Update parent data and navigate immediately
-      console.log("Calling updateData with:", mappedData);
       updateData(mappedData);
-      console.log("Calling onNext()");
       onNext();
-      console.log("onNext() called");
     } catch (error) {
       console.error("Error in handleNext:", error);
       toast.error("Failed to save data");
     } finally {
       setIsSubmitting(false);
-      console.log("=== SUBMISSION COMPLETE ===");
     }
   };
 
@@ -151,12 +134,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log("Form submission prevented");
-        }}
-      >
+      <div>
         <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-orange-600" />
