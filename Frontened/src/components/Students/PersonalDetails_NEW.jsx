@@ -33,11 +33,6 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   });
 
   const handleNext = async (e) => {
-    console.log("=== BUTTON CLICKED ===");
-    console.log("Event:", e);
-    console.log("Event type:", e.type);
-    console.log("Event target:", e.target);
-
     // Prevent any default behavior and event propagation
     e.preventDefault();
     e.stopPropagation();
@@ -85,18 +80,18 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         roomNumber: formData.roomno,
       };
 
-      // Update parent data and navigate immediately
-      console.log("Calling updateData with:", mappedData);
+      // Update parent data first
       updateData(mappedData);
-      console.log("Calling onNext()");
-      onNext();
-      console.log("onNext() called");
+
+      // Wait a moment for state to update, then navigate
+      setTimeout(() => {
+        onNext();
+      }, 100);
     } catch (error) {
       console.error("Error in handleNext:", error);
       toast.error("Failed to save data");
     } finally {
       setIsSubmitting(false);
-      console.log("=== SUBMISSION COMPLETE ===");
     }
   };
 
@@ -151,12 +146,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log("Form submission prevented");
-        }}
-      >
+      <div>
         <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-orange-600" />
@@ -393,30 +383,29 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Navigation buttons - completely separate from form */}
-      <div className="flex justify-between mt-10">
-        <button
-          type="button"
-          onClick={onPrev}
-          className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Previous
-        </button>
+        <div className="flex justify-between mt-10">
+          <button
+            type="button"
+            onClick={onPrev}
+            className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Previous
+          </button>
 
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={isSubmitting}
-          className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {isSubmitting ? "Saving..." : "Continue to Documents"}
-          <ArrowRight className="w-5 h-5" />
-        </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={isSubmitting}
+            className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? "Saving..." : "Continue to Documents"}
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Show Data */}

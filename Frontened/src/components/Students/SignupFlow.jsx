@@ -1,49 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Mail, User, FileText, Check,
-  UtensilsCrossed, Coffee, ChefHat
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+  Mail,
+  User,
+  FileText,
+  Check,
+  UtensilsCrossed,
+  Coffee,
+  ChefHat,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import EmailVerification from './EmailVerification';
-import PersonalDetails from './PersonalDetails';
-import DocumentUpload from './DocumentUpload';
+import EmailVerification from "./EmailVerification";
+import PersonalDetails from "./PersonalDetails";
+import DocumentUpload from "./DocumentUpload";
 
 const SignupFlow = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [signupData, setSignupData] = useState({
-    email: '',
-    verificationCode: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    dateOfBirth: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    studentId: '',
-    hostelBlock: '',
-    roomNumber: '',
-    mealPlan: '',
-    dietaryRestrictions: '',
-    documents: []
+    email: "",
+    verificationCode: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    dateOfBirth: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    studentId: "",
+    hostelBlock: "",
+    roomNumber: "",
+    mealPlan: "",
+    dietaryRestrictions: "",
+    documents: [],
   });
 
   const steps = [
-    { id: 1, title: 'Email Verification', icon: Mail, description: 'Verify your student email' },
-    { id: 2, title: 'Personal Details', icon: User, description: 'Complete your profile' },
-    { id: 3, title: 'Document Upload', icon: FileText, description: 'Upload required documents' }
+    {
+      id: 1,
+      title: "Email Verification",
+      icon: Mail,
+      description: "Verify your student email",
+    },
+    {
+      id: 2,
+      title: "Personal Details",
+      icon: User,
+      description: "Complete your profile",
+    },
+    {
+      id: 3,
+      title: "Document Upload",
+      icon: FileText,
+      description: "Upload required documents",
+    },
   ];
 
   const updateSignupData = (data) => {
-    setSignupData(prev => ({ ...prev, ...data }));
+    console.log("updateSignupData called with:", data);
+    setSignupData((prev) => {
+      const updated = { ...prev, ...data };
+      console.log("Updated signupData:", updated);
+      return updated;
+    });
   };
 
   const nextStep = () => {
-    if (currentStep === 1 && !signupData.email) return;
-    if (currentStep === 2 && (!signupData.firstName || !signupData.lastName || !signupData.phone)) return;
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    console.log("nextStep called, currentStep:", currentStep);
+    console.log("signupData:", signupData);
+
+    if (currentStep === 1 && !signupData.email) {
+      console.log("Step 1: Missing email");
+      return;
+    }
+
+    // Temporarily disable step 2 validation to test if that's the issue
+    // if (
+    //   currentStep === 2 &&
+    //   (!signupData.firstName || !signupData.lastName || !signupData.phone)
+    // ) {
+    //   console.log("Step 2: Missing required fields", {
+    //     firstName: signupData.firstName,
+    //     lastName: signupData.lastName,
+    //     phone: signupData.phone,
+    //   });
+    //   return;
+    // }
+
+    if (currentStep < 3) {
+      console.log("Advancing to step:", currentStep + 1);
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const prevStep = () => {
@@ -53,11 +100,30 @@ const SignupFlow = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <EmailVerification data={signupData} updateData={updateSignupData} onNext={nextStep} />;
+        return (
+          <EmailVerification
+            data={signupData}
+            updateData={updateSignupData}
+            onNext={nextStep}
+          />
+        );
       case 2:
-        return <PersonalDetails data={signupData} updateData={updateSignupData} onNext={nextStep} onPrev={prevStep} />;
+        return (
+          <PersonalDetails
+            data={signupData}
+            updateData={updateSignupData}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
       case 3:
-        return <DocumentUpload data={signupData} updateData={updateSignupData} onPrev={prevStep} />;
+        return (
+          <DocumentUpload
+            data={signupData}
+            updateData={updateSignupData}
+            onPrev={prevStep}
+          />
+        );
       default:
         return null;
     }
@@ -91,19 +157,35 @@ const SignupFlow = () => {
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isCompleted
-                        ? 'bg-green-500 text-white shadow-md scale-105'
+                        ? "bg-green-500 text-white shadow-md scale-105"
                         : isActive
-                        ? 'bg-orange-500 text-white shadow ring-4 ring-orange-200 scale-105'
-                        : 'bg-white text-gray-400 shadow border border-gray-200'
+                        ? "bg-orange-500 text-white shadow ring-4 ring-orange-200 scale-105"
+                        : "bg-white text-gray-400 shadow border border-gray-200"
                     }`}
                   >
-                    {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {isCompleted ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
                   </div>
                   <div className="text-center mt-3">
-                    <p className={`text-base font-semibold ${isActive || isCompleted ? 'text-gray-900' : 'text-gray-500'}`}>
+                    <p
+                      className={`text-base font-semibold ${
+                        isActive || isCompleted
+                          ? "text-gray-900"
+                          : "text-gray-500"
+                      }`}
+                    >
                       {step.title}
                     </p>
-                    <p className={`text-sm ${isActive || isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>
+                    <p
+                      className={`text-sm ${
+                        isActive || isCompleted
+                          ? "text-gray-600"
+                          : "text-gray-400"
+                      }`}
+                    >
                       {step.description}
                     </p>
                   </div>
@@ -112,7 +194,7 @@ const SignupFlow = () => {
                   <div className="w-16 h-1 bg-gray-300 mx-4 rounded-full relative overflow-hidden">
                     <div
                       className={`absolute h-full rounded-full transition-all duration-500 ease-in-out ${
-                        currentStep > step.id ? 'bg-green-400 w-full' : 'w-0'
+                        currentStep > step.id ? "bg-green-400 w-full" : "w-0"
                       }`}
                     />
                   </div>
@@ -129,7 +211,7 @@ const SignupFlow = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
             >
               {renderStep()}
             </motion.div>
