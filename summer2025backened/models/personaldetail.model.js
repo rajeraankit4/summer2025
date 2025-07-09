@@ -1,58 +1,77 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const personaldetailSchema = new mongoose.Schema({
   firstname: {
     type: String,
-    required: true
+    required: true,
   },
   lastname: {
     type: String,
-    required: true
+    required: true,
   },
   phone: {
     type: String,
-    required: true
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
   },
   DOB: {
     type: String,
-    required: true
+    required: true,
   },
-
-
-       address: {
+  address: {
     type: String,
-    required: true
+    required: true,
   },
-
   city: {
     type: String,
-    required: true
+    required: true,
   },
-
   state: {
     type: String,
-    required: true
+    required: true,
   },
-
-  
-   studentid: {
+  zipcode: {
     type: String,
-    required: true
+    required: true,
   },
-
-    hostelblock: {
+  studentid: {
     type: String,
-    required: true
+    required: true,
+    unique: true,
   },
- 
+  hostelblock: {
+    type: String,
+    required: true,
+  },
   roomno: {
     type: String,
-    required: true
+    required: true,
   },
-
-
+  // Document fields
+  documents: [
+    {
+      type: { type: String, required: true },
+      filename: { type: String, required: true },
+      originalName: { type: String, required: true },
+      path: { type: String, required: true },
+      uploadDate: { type: Date, default: Date.now },
+    },
+  ],
+  documentsVerified: { type: Boolean, default: false },
+  verificationStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+  },
 });
 
-const personaldetailModel = mongoose.model('personaldetail', personaldetailSchema);
+const personaldetailModel = mongoose.model(
+  "personaldetail",
+  personaldetailSchema
+);
 
 export default personaldetailModel;

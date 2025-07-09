@@ -16,13 +16,11 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   const [PersonalDetails, setPersonalDetails] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const [formData, setFormData] = useState({
     firstname: data?.firstName || "",
     lastname: data?.lastName || "",
     phone: data?.phone || "",
-    email: data?.email || "",
     DOB: data?.dateOfBirth || "",
     address: data?.address || "",
     city: data?.city || "",
@@ -39,22 +37,17 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log(
-      "handleNext called, isSubmitting:",
-      isSubmitting,
-      "hasSubmitted:",
-      hasSubmitted
-    );
+    console.log("handleNext called, isSubmitting:", isSubmitting);
 
     // Prevent double submission
-    if (isSubmitting || hasSubmitted) {
-      console.log("Preventing double submission");
+    if (isSubmitting) {
+      console.log("Already submitting, returning");
       return;
     }
 
     try {
+      console.log("Starting submission process");
       setIsSubmitting(true);
-      console.log("Starting form submission...");
 
       // Validate form before saving
       if (!validateForm()) {
@@ -63,66 +56,20 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         return;
       }
 
-      console.log("Form data to submit:", formData);
+      console.log("Form validation passed, saving data");
+      await axios.post(
+        "http://localhost:5000/api/personaldetail/insert",
+        formData
+      );
+      toast.success("Personal details saved successfully");
 
-      // Check if student already exists to prevent duplicates
-      let saveSuccessful = false;
-      try {
-        const existingStudent = await axios.get(
-          `http://localhost:5000/api/personaldetail/view`
-        );
-        const studentExists = existingStudent.data.personaldetailList?.some(
-          (student) =>
-            student.studentid === formData.studentid ||
-            student.email === formData.email
-        );
-
-        if (!studentExists) {
-          await axios.post(
-            "http://localhost:5000/api/personaldetail/insert",
-            formData
-          );
-          toast.success("Personal details saved successfully");
-          saveSuccessful = true;
-        } else {
-          toast.info("Student already exists, proceeding to next step");
-          saveSuccessful = true; // Consider existing student as "successful"
-        }
-      } catch (dbError) {
-        console.error("Database error:", dbError);
-        // If checking fails, try to insert anyway (backend should handle duplicates)
-        try {
-          await axios.post(
-            "http://localhost:5000/api/personaldetail/insert",
-            formData
-          );
-          toast.success("Personal details saved successfully");
-          saveSuccessful = true;
-        } catch (insertError) {
-          console.error("Insert error:", insertError);
-          if (insertError.response?.status === 400) {
-            toast.info("Student already exists, proceeding to next step");
-            saveSuccessful = true;
-          } else {
-            toast.error("Failed to save personal details");
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      }
-
-      // Only set hasSubmitted if save was successful
-      if (saveSuccessful) {
-        setHasSubmitted(true);
-        console.log("Database operations completed, proceeding to next step");
-      }
+      console.log("Data saved, updating parent and navigating");
 
       // Map the form data to match the parent component's expected field names
       const mappedData = {
         firstName: formData.firstname,
         lastName: formData.lastname,
         phone: formData.phone,
-        email: formData.email,
         dateOfBirth: formData.DOB,
         address: formData.address,
         city: formData.city,
@@ -136,7 +83,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       // Update parent data first
       updateData(mappedData);
 
-      // Use setTimeout to ensure state update completes before navigation
+      // Wait a moment for state to update, then navigate
       setTimeout(() => {
         onNext();
       }, 100);
@@ -153,7 +100,6 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       "firstname",
       "lastname",
       "phone",
-      "email",
       "DOB",
       "address",
       "city",
@@ -265,25 +211,6 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
                 />
                 <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                Email *
-              </label>
-              <input
-                value={formData.email}
-                onChange={getValue}
-                type="email"
-                id="email"
-                name="email"
-                className="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
-                placeholder="student@university.edu"
-              />
             </div>
 
             {/* DOB */}
@@ -456,30 +383,29 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Navigation buttons - completely separate from form */}
-      <div className="flex justify-between mt-10">
-        <button
-          type="button"
-          onClick={onPrev}
-          className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Previous
-        </button>
+        <div className="flex justify-between mt-10">
+          <button
+            type="button"
+            onClick={onPrev}
+            className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Previous
+          </button>
 
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={isSubmitting}
-          className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {isSubmitting ? "Saving..." : "Continue to Documents"}
-          <ArrowRight className="w-5 h-5" />
-        </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={isSubmitting}
+            className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? "Saving..." : "Continue to Documents"}
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Show Data */}
@@ -491,10 +417,9 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
               <strong>
                 {detail.firstname} {detail.lastname}
               </strong>{" "}
-              — {detail.phone}, Email: {detail.email}, DOB: {detail.DOB}-
-              address: {detail.address}-{detail.city}- {detail.state}-
-              {detail.zipcode}-{detail.studentid}-{detail.hostelblock}-
-              {detail.roomno}
+              — {detail.phone}, DOB: {detail.DOB}- address: {detail.address}-
+              {detail.city}- {detail.state}-{detail.zipcode}-{detail.studentid}-
+              {detail.hostelblock}-{detail.roomno}
             </li>
           ))}
         </ul>

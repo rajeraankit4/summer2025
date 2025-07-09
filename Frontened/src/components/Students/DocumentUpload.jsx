@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
-  Upload, FileText, Image, X, Check, ArrowLeft,
-  UtensilsCrossed, GraduationCap, CreditCard
-} from 'lucide-react';
+  Upload,
+  FileText,
+  Image,
+  X,
+  Check,
+  ArrowLeft,
+  UtensilsCrossed,
+  GraduationCap,
+  CreditCard,
+} from "lucide-react";
 
 const DocumentUpload = ({ data, updateData, onPrev }) => {
   const [documents, setDocuments] = useState(data.documents || []);
@@ -11,42 +20,42 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
   const [isComplete, setIsComplete] = useState(false);
 
   const acceptedFileTypes = [
-    'application/pdf',
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif'
+    "application/pdf",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
   ];
   const maxFileSize = 10 * 1024 * 1024; // 10MB
 
   const requiredDocuments = [
     {
-      title: 'Student ID Card',
-      description: 'Clear photo of your student identification card',
+      title: "Student ID Card",
+      description: "Clear photo of your student identification card",
       icon: GraduationCap,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
     },
     {
-      title: 'Hostel Allotment Letter',
-      description: 'Official hostel room allotment document',
+      title: "Hostel Allotment Letter",
+      description: "Official hostel room allotment document",
       icon: FileText,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      color: "text-green-600",
+      bgColor: "bg-green-50",
     },
     {
-      title: 'Fee Payment Receipt',
-      description: 'Proof of mess/canteen fee payment',
+      title: "Fee Payment Receipt",
+      description: "Proof of mess/canteen fee payment",
       icon: CreditCard,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    }
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+    },
   ];
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else setDragActive(false);
   };
 
@@ -90,29 +99,68 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
   };
 
   const getFileIcon = (type) =>
-    type === 'application/pdf' ? (
+    type === "application/pdf" ? (
       <FileText className="w-8 h-8 text-red-500" />
     ) : (
       <Image className="w-8 h-8 text-orange-500" />
     );
 
   const formatFileSize = (bytes) => {
-    const sizes = ['Bytes', 'KB', 'MB'];
+    const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (documents.length === 0) {
-      alert('Please upload at least one document');
+      toast.error("Please upload at least one document");
       return;
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      const formData = new FormData();
+      const documentTypes = [];
+
+      // Add files and their types to FormData
+      documents.forEach((file, index) => {
+        formData.append("documents", file);
+        // You can customize document types based on your requirements
+        documentTypes.push(`document-${index + 1}`);
+      });
+
+      // Add document types array
+      documentTypes.forEach((type) => {
+        formData.append("documentTypes", type);
+      });
+
+      // Upload documents using student ID from signup data
+      const response = await axios.post(
+        `http://localhost:5000/api/personaldetail/upload-documents/${data.studentId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success("Documents uploaded successfully!");
+
+      // Update signup data with uploaded documents
+      updateData({
+        documents: response.data.documents,
+        verificationStatus: "pending",
+      });
+
       setIsComplete(true);
-    }, 1500);
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload documents. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isComplete) {
@@ -123,9 +171,12 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
             <Check className="w-12 h-12 text-white" />
           </div>
         </div>
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">🎉 Welcome to FoodieHub!</h2>
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          🎉 Welcome to FoodieHub!
+        </h2>
         <p className="text-xl text-gray-600 mb-8">
-          Your registration is complete! Get ready for an amazing dining experience.
+          Your registration is complete! Get ready for an amazing dining
+          experience.
         </p>
 
         <div className="mt-8 flex justify-center gap-4">
@@ -150,16 +201,25 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
             <Upload className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Upload Required Documents</h2>
-        <p className="text-lg text-gray-600">Upload your documents to complete the registration process</p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+          Upload Required Documents
+        </h2>
+        <p className="text-lg text-gray-600">
+          Upload your documents to complete the registration process
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {requiredDocuments.map((doc, i) => {
           const Icon = doc.icon;
           return (
-            <div key={i} className={`${doc.bgColor} border rounded-2xl p-6 text-center`}>
-              <div className={`w-16 h-16 ${doc.bgColor} rounded-xl mx-auto mb-4 flex justify-center items-center`}>
+            <div
+              key={i}
+              className={`${doc.bgColor} border rounded-2xl p-6 text-center`}
+            >
+              <div
+                className={`w-16 h-16 ${doc.bgColor} rounded-xl mx-auto mb-4 flex justify-center items-center`}
+              >
                 <Icon className={`w-8 h-8 ${doc.color}`} />
               </div>
               <h3 className="font-bold text-gray-900">{doc.title}</h3>
@@ -175,38 +235,59 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
         onDragOver={handleDrag}
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-2xl p-12 text-center ${
-          dragActive ? 'border-orange-500 bg-orange-50' : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+          dragActive
+            ? "border-orange-500 bg-orange-50"
+            : "border-gray-300 hover:border-orange-400 hover:bg-orange-50"
         }`}
       >
         <Upload className="w-10 h-10 text-orange-600 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          Drop files here or{' '}
+          Drop files here or{" "}
           <label className="text-orange-600 font-bold underline cursor-pointer">
             browse
-            <input type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.gif" />
+            <input
+              type="file"
+              multiple
+              onChange={handleChange}
+              className="hidden"
+              accept=".pdf,.jpg,.jpeg,.png,.gif"
+            />
           </label>
         </h3>
-        <p className="text-sm text-gray-500">Supported formats: PDF, JPG, PNG, GIF | Max size: 10MB each</p>
+        <p className="text-sm text-gray-500">
+          Supported formats: PDF, JPG, PNG, GIF | Max size: 10MB each
+        </p>
       </div>
 
       {documents.length > 0 && (
         <div className="mt-10">
           <h4 className="text-2xl font-semibold mb-4 text-gray-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-orange-500" /> Uploaded Documents ({documents.length})
+            <FileText className="w-5 h-5 text-orange-500" /> Uploaded Documents
+            ({documents.length})
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {documents.map((doc, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 bg-orange-50 border rounded-xl shadow-sm">
+              <div
+                key={idx}
+                className="flex items-center justify-between p-4 bg-orange-50 border rounded-xl shadow-sm"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow">
                     {getFileIcon(doc.type)}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800 truncate max-w-48">{doc.name}</p>
-                    <p className="text-xs text-gray-600">{formatFileSize(doc.size)}</p>
+                    <p className="font-bold text-gray-800 truncate max-w-48">
+                      {doc.name}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {formatFileSize(doc.size)}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => removeDocument(idx)} className="hover:text-red-600 text-gray-400">
+                <button
+                  onClick={() => removeDocument(idx)}
+                  className="hover:text-red-600 text-gray-400"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -229,7 +310,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
           disabled={isSubmitting || documents.length === 0}
           className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition disabled:opacity-50"
         >
-          {isSubmitting ? 'Processing...' : 'Complete Registration'}
+          {isSubmitting ? "Processing..." : "Complete Registration"}
         </button>
       </div>
     </div>
