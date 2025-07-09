@@ -61,17 +61,6 @@ const SignupFlow = () => {
   };
 
   const nextStep = () => {
-    if (currentStep === 1 && !signupData.email) {
-      return;
-    }
-
-    if (
-      currentStep === 2 &&
-      (!signupData.firstName || !signupData.lastName || !signupData.phone)
-    ) {
-      return;
-    }
-
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }

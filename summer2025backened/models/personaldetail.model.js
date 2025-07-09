@@ -36,6 +36,7 @@ const personaldetailSchema = new mongoose.Schema({
   studentid: {
     type: String,
     required: true,
+    unique: true,
   },
   hostelblock: {
     type: String,

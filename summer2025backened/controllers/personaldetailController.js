@@ -17,6 +17,15 @@ export const personaldetailInsert = async (req, res) => {
       roomno,
     } = req.body;
 
+    // Check if student already exists
+    const existingStudent = await personaldetailModel.findOne({ studentid });
+    if (existingStudent) {
+      return res.status(400).send({
+        status: 0,
+        message: "Student with this ID already exists",
+      });
+    }
+
     const newDetail = new personaldetailModel({
       firstname,
       lastname,
@@ -38,11 +47,19 @@ export const personaldetailInsert = async (req, res) => {
       message: "Personal detail saved successfully",
     });
   } catch (err) {
-    res.status(500).send({
-      status: 0,
-      message: "Error while saving personal detail",
-      error: err.message,
-    });
+    // Handle duplicate key error
+    if (err.code === 11000) {
+      res.status(400).send({
+        status: 0,
+        message: "Student with this ID already exists",
+      });
+    } else {
+      res.status(500).send({
+        status: 0,
+        message: "Error while saving personal detail",
+        error: err.message,
+      });
+    }
   }
 };
 

@@ -16,6 +16,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   const [PersonalDetails, setPersonalDetails] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const [formData, setFormData] = useState({
     firstname: data?.firstName || "",
@@ -37,25 +38,81 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
     e.preventDefault();
     e.stopPropagation();
 
+    console.log(
+      "handleNext called, isSubmitting:",
+      isSubmitting,
+      "hasSubmitted:",
+      hasSubmitted
+    );
+
     // Prevent double submission
-    if (isSubmitting) {
+    if (isSubmitting || hasSubmitted) {
+      console.log("Preventing double submission");
       return;
     }
 
     try {
       setIsSubmitting(true);
+      console.log("Starting form submission...");
 
       // Validate form before saving
       if (!validateForm()) {
+        console.log("Form validation failed");
         setIsSubmitting(false);
         return;
       }
 
-      await axios.post(
-        "http://localhost:5000/api/personaldetail/insert",
-        formData
-      );
-      toast.success("Personal details saved successfully");
+      console.log("Form data to submit:", formData);
+
+      // Check if student already exists to prevent duplicates
+      let saveSuccessful = false;
+      try {
+        const existingStudent = await axios.get(
+          `http://localhost:5000/api/personaldetail/view`
+        );
+        const studentExists = existingStudent.data.personaldetailList?.some(
+          (student) => student.studentid === formData.studentid
+        );
+
+        if (!studentExists) {
+          await axios.post(
+            "http://localhost:5000/api/personaldetail/insert",
+            formData
+          );
+          toast.success("Personal details saved successfully");
+          saveSuccessful = true;
+        } else {
+          toast.info("Student already exists, proceeding to next step");
+          saveSuccessful = true; // Consider existing student as "successful"
+        }
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        // If checking fails, try to insert anyway (backend should handle duplicates)
+        try {
+          await axios.post(
+            "http://localhost:5000/api/personaldetail/insert",
+            formData
+          );
+          toast.success("Personal details saved successfully");
+          saveSuccessful = true;
+        } catch (insertError) {
+          console.error("Insert error:", insertError);
+          if (insertError.response?.status === 400) {
+            toast.info("Student already exists, proceeding to next step");
+            saveSuccessful = true;
+          } else {
+            toast.error("Failed to save personal details");
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      // Only set hasSubmitted if save was successful
+      if (saveSuccessful) {
+        setHasSubmitted(true);
+        console.log("Database operations completed, proceeding to next step");
+      }
 
       // Map the form data to match the parent component's expected field names
       const mappedData = {
@@ -72,9 +129,13 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         roomNumber: formData.roomno,
       };
 
-      // Update parent data and navigate immediately
+      // Update parent data first
       updateData(mappedData);
-      onNext();
+
+      // Use setTimeout to ensure state update completes before navigation
+      setTimeout(() => {
+        onNext();
+      }, 100);
     } catch (error) {
       console.error("Error in handleNext:", error);
       toast.error("Failed to save data");
