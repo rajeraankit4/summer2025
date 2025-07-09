@@ -66,7 +66,7 @@ const PersonalDetails = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="space-y-6 p-4 md:p-6 lg:p-8">
         <h1 className="text-3xl font-bold text-gray-800">
           🎓 Student Management
@@ -82,18 +82,20 @@ const PersonalDetails = () => {
           </div>
         </div>
 
-        <div className="max-h-[500px] overflow-y-auto overflow-x-auto rounded-lg shadow bg-white">
-          <table className="min-w-full table-auto border-collapse">
+        <div className="max-h-[500px] overflow-y-auto rounded-lg shadow bg-white">
+          <table className="w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">DOB</th>
-                <th className="px-6 py-4">Phone</th>
-                <th className="px-6 py-4">Room</th>
-                <th className="px-6 py-4">Documents</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Complete Details</th>
-                <th className="px-6 py-4">Action</th>
+                <th className="px-4 py-4 whitespace-nowrap">Name</th>
+                <th className="px-4 py-4 whitespace-nowrap">DOB</th>
+                <th className="px-4 py-4 whitespace-nowrap">Phone</th>
+                <th className="px-4 py-4 whitespace-nowrap">Room</th>
+                <th className="px-4 py-4 whitespace-nowrap">Documents</th>
+                <th className="px-4 py-4 whitespace-nowrap">Status</th>
+                <th className="px-4 py-4 whitespace-nowrap">
+                  Complete Details
+                </th>
+                <th className="px-4 py-4 whitespace-nowrap">Action</th>
               </tr>
             </thead>
 
@@ -103,15 +105,21 @@ const PersonalDetails = () => {
                   key={index}
                   className="border-b hover:bg-gray-50 transition-all duration-200"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900">
+                  <td className="px-4 py-4 font-medium text-gray-900 whitespace-nowrap">
                     {detail.firstname} {detail.lastname}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{detail.DOB}</td>
-                  <td className="px-6 py-4 text-gray-600">{detail.phone}</td>
-                  <td className="px-6 py-4">{detail.roomno}</td>
+                  <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
+                    {detail.DOB}
+                  </td>
+                  <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
+                    {detail.phone}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {detail.roomno}
+                  </td>
 
                   {/* Documents Column */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm">
                         {detail.documents?.length || 0} files
@@ -128,7 +136,7 @@ const PersonalDetails = () => {
                   </td>
 
                   {/* Status Column */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(detail.verificationStatus)}
                       <span className="text-sm capitalize">
@@ -138,7 +146,7 @@ const PersonalDetails = () => {
                   </td>
 
                   {/* Complete Details Column */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <button
                       onClick={() => viewCompleteDetails(detail)}
                       className="text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"
@@ -149,7 +157,7 @@ const PersonalDetails = () => {
                   </td>
 
                   {/* Action Column */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex space-x-2">
                       {detail.documents?.length > 0 &&
                         detail.verificationStatus === "pending" && (
@@ -232,8 +240,8 @@ const PersonalDetails = () => {
 
         {/* Complete Details Modal */}
         {showCompleteDetails && selectedStudent && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-8 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-800">
                   Complete Student Details
