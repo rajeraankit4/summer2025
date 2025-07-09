@@ -1,5 +1,6 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
+// Middleware to verify token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -11,11 +12,23 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret123");
-    req.user = decoded; // attach user info to request
+    req.user = decoded; // { id, email, role, etc. }
     next();
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token." });
   }
 };
 
-module.exports = verifyToken;
+// ✅ Role-based access restriction
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: `Access denied. Requires one of the following roles: ${roles.join(", ")}`,
+      });
+    }
+    next();
+  };
+};
+
+export  { verifyToken, restrictTo };
