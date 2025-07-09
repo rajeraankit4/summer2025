@@ -57,38 +57,22 @@ const SignupFlow = () => {
   ];
 
   const updateSignupData = (data) => {
-    console.log("updateSignupData called with:", data);
-    setSignupData((prev) => {
-      const updated = { ...prev, ...data };
-      console.log("Updated signupData:", updated);
-      return updated;
-    });
+    setSignupData((prev) => ({ ...prev, ...data }));
   };
 
   const nextStep = () => {
-    console.log("nextStep called, currentStep:", currentStep);
-    console.log("signupData:", signupData);
-
     if (currentStep === 1 && !signupData.email) {
-      console.log("Step 1: Missing email");
       return;
     }
 
-    // Temporarily disable step 2 validation to test if that's the issue
-    // if (
-    //   currentStep === 2 &&
-    //   (!signupData.firstName || !signupData.lastName || !signupData.phone)
-    // ) {
-    //   console.log("Step 2: Missing required fields", {
-    //     firstName: signupData.firstName,
-    //     lastName: signupData.lastName,
-    //     phone: signupData.phone,
-    //   });
-    //   return;
-    // }
+    if (
+      currentStep === 2 &&
+      (!signupData.firstName || !signupData.lastName || !signupData.phone)
+    ) {
+      return;
+    }
 
     if (currentStep < 3) {
-      console.log("Advancing to step:", currentStep + 1);
       setCurrentStep(currentStep + 1);
     }
   };
