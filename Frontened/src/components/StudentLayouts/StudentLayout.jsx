@@ -13,7 +13,7 @@ import {
   CreditCard,
   Star,
 } from "lucide-react";
-import axios from "../../api/axiosConfig";
+
 
 const studentNavItems = [
   {

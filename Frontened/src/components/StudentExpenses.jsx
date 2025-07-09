@@ -1,31 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Plus, Search, DollarSign, User, Receipt } from "lucide-react";
 
 const StudentExpenses = () => {
   const [expenseData, setExpenseData] = useState({
-    rollNo: "",
+    studentid: "",
     amount: "",
     description: "",
   });
 
-  const [recentExpenses, setRecentExpenses] = useState([
-    {
-      id: 1,
-      rollNo: "22BCE1234",
-      amount: 150,
-      description: "Monthly mess charges",
-      date: "2025-07-07",
-    },
-    {
-      id: 2,
-      rollNo: "22BCE5678",
-      amount: 75,
-      description: "Extra meal charges",
-      date: "2025-07-06",
-    },
-  ]);
-
+  const [showAmountSuggestions, setShowAmountSuggestions] = useState(false);
+  const [showDescriptionSuggestions, setShowDescriptionSuggestions] = useState(false);
+  const [recentExpenses, setRecentExpenses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const amountSuggestions = [
+    { label: "Regular Meal ₹48", value: 48, description: "Regular Meal" },
+    { label: "Aloo Paratha Meal ₹35", value: 35, description: "Aloo Paratha Meal" },
+    { label: "Special Thali ₹50", value: 50, description: "Special Thali" },
+    { label: "Tea + Samosa ₹20", value: 20, description: "Tea + Samosa" },
+  ];
+
+  const descriptionSuggestions = [
+    "Regular Meal",
+    "Aloo Paratha Meal",
+    "Special Thali",
+    "Tea + Samosa",
+    "Monthly mess charges",
+    "Extra meal charges",
+  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,38 +36,106 @@ const StudentExpenses = () => {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "amount") setShowAmountSuggestions(true);
+    if (name === "description") setShowDescriptionSuggestions(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleAmountClick = (value, description) => {
+    setExpenseData((prev) => ({
+      ...prev,
+      amount: value,
+      description: description || prev.description,
+    }));
+    setShowAmountSuggestions(false);
+  };
+
+  const handleDescriptionClick = (value) => {
+    setExpenseData((prev) => ({ ...prev, description: value }));
+    setShowDescriptionSuggestions(false);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!expenseData.rollNo || !expenseData.amount) {
+    if (!expenseData.studentid || !expenseData.amount) {
       alert("Please fill in all required fields");
       return;
     }
 
-    // Add new expense to recent expenses (in real app, this would be API call)
-    const newExpense = {
-      id: Date.now(),
-      ...expenseData,
-      amount: parseFloat(expenseData.amount),
-      date: new Date().toISOString().split("T")[0], // Current date
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.post(
+        "/api/mess-staff/add-expense",
+        {
+          studentid: expenseData.studentid.toUpperCase(),
+          amount: parseFloat(expenseData.amount),
+          description: expenseData.description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const newExpense = {
+        id: Date.now(),
+        studentid: expenseData.studentid.toUpperCase(),
+        amount: expenseData.amount,
+        description: expenseData.description,
+        date: new Date().toISOString().split("T")[0],
+      };
+
+      setRecentExpenses((prev) => [newExpense, ...prev]);
+
+      setExpenseData({
+        studentid: "",
+        amount: "",
+        description: "",
+      });
+    } catch (error) {
+      console.error("Failed to submit expense:", error);
+      alert(
+        error.response?.data?.message || "Something went wrong while submitting the expense"
+      );
+    }
+  };
+
+  useEffect(() => {
+    const fetchRecentExpenses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("/api/mess-staff/transactions", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const fetchedExpenses = response.data?.data || [];
+
+        const formattedExpenses = fetchedExpenses.map((item) => ({
+          id: item._id || Date.now(),
+          studentid: item.studentid?.toUpperCase() || "UNKNOWN",
+          amount: item.amount,
+          description: item.description,
+          date: item.date,
+        }));
+
+        setRecentExpenses(formattedExpenses);
+      } catch (error) {
+        console.error("Failed to fetch expenses:", error);
+      }
     };
 
-    setRecentExpenses((prev) => [newExpense, ...prev]);
-
-    // Reset form
-    setExpenseData({
-      rollNo: "",
-      amount: "",
-      description: "",
-    });
-  };
+    fetchRecentExpenses();
+  }, []);
 
   const filteredExpenses = recentExpenses.filter(
     (expense) =>
-      expense.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase())
+      expense.studentid.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (expense.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -76,37 +147,29 @@ const StudentExpenses = () => {
             <DollarSign className="w-6 h-6 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Student Expenses
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Student Expenses</h1>
             <p className="text-gray-600">Manage and track student expenses</p>
           </div>
         </div>
       </div>
 
-      {/* Add Expense Form */}
+      {/* Form */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-2 mb-6">
           <Plus className="w-5 h-5 text-green-600" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            Add New Expense
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900">Add New Expense</h2>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Student ID */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Roll Number *
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Student ID *</label>
             <div className="relative">
               <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
               <input
                 type="text"
-                name="rollNo"
-                value={expenseData.rollNo}
+                name="studentid"
+                value={expenseData.studentid}
                 onChange={handleInputChange}
                 placeholder="e.g., 22BCE1234"
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -115,10 +178,9 @@ const StudentExpenses = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Amount (₹) *
-            </label>
+          {/* Amount */}
+          <div className="space-y-2 relative">
+            <label className="block text-sm font-medium text-gray-700">Amount (₹) *</label>
             <div className="relative">
               <DollarSign className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
               <input
@@ -129,16 +191,30 @@ const StudentExpenses = () => {
                 placeholder="0.00"
                 step="0.01"
                 min="0"
+                onFocus={() => setShowAmountSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowAmountSuggestions(false), 100)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
             </div>
+            {showAmountSuggestions && (
+              <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-md max-h-40 overflow-y-auto">
+                {amountSuggestions.map((item, i) => (
+                  <li
+                    key={i}
+                    onMouseDown={() => handleAmountClick(item.value, item.description)}
+                    className="px-4 py-2 hover:bg-green-100 cursor-pointer text-sm"
+                  >
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
+          {/* Description */}
+          <div className="space-y-2 relative">
+            <label className="block text-sm font-medium text-gray-700">Description</label>
             <div className="relative">
               <Receipt className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
               <input
@@ -147,9 +223,28 @@ const StudentExpenses = () => {
                 value={expenseData.description}
                 onChange={handleInputChange}
                 placeholder="e.g., Monthly mess charges"
+                onFocus={() => setShowDescriptionSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowDescriptionSuggestions(false), 100)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
+            {showDescriptionSuggestions && (
+              <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-md max-h-40 overflow-y-auto">
+                {descriptionSuggestions
+                  .filter((desc) =>
+                    desc.toLowerCase().includes(expenseData.description.toLowerCase())
+                  )
+                  .map((item, i) => (
+                    <li
+                      key={i}
+                      onMouseDown={() => handleDescriptionClick(item)}
+                      className="px-4 py-2 hover:bg-green-100 cursor-pointer text-sm"
+                    >
+                      {item}
+                    </li>
+                  ))}
+              </ul>
+            )}
           </div>
 
           <div className="md:col-span-2 lg:col-span-3">
@@ -163,19 +258,16 @@ const StudentExpenses = () => {
         </form>
       </div>
 
-      {/* Recent Expenses */}
+      {/* Recent Expenses Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Recent Expenses
-            </h2>
-
+            <h2 className="text-lg font-semibold text-gray-900">Recent Expenses</h2>
             <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
               <input
                 type="text"
-                placeholder="Search by roll number or description..."
+                placeholder="Search by student ID or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-64"
@@ -189,7 +281,7 @@ const StudentExpenses = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Roll Number
+                  Student ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
@@ -207,12 +299,10 @@ const StudentExpenses = () => {
                 filteredExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {expense.rollNo}
+                      {expense.studentid}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className="font-semibold text-green-600">
-                        ₹{expense.amount}
-                      </span>
+                      <span className="font-semibold text-green-600">₹{expense.amount}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {expense.description || "N/A"}
@@ -224,10 +314,7 @@ const StudentExpenses = () => {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="4"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
+                  <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
                     No expenses found
                   </td>
                 </tr>
