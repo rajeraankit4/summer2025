@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import {
   Mail,
   Send,
@@ -9,7 +10,7 @@ import {
 const EmailVerification = ({ data, updateData, onNext }) => {
   const sectionRef = useRef(null);
   const [email, setEmail] = useState(data.email || '');
-  const [verificationCode, setVerificationCode] = useState(data.verificationCode || '');
+  const [otp, setOtp] = useState(data.otp || '');
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -44,20 +45,21 @@ const EmailVerification = ({ data, updateData, onNext }) => {
       updateData({ email });
       setSuccessMessage("Verification code sent successfully!");
     } catch (err) {
+      console.error("Error sending verification code:", err);
       setErrors({ email: err.response?.data?.error || 'Failed to send verification code' });
     }
   };
 
   const verifyCode = async () => {
     setErrors({});
-    if (!verificationCode) return setErrors({ code: 'Verification code is required' });
-    if (verificationCode.length !== 6) return setErrors({ code: 'Verification code must be 6 digits' });
+    if (!otp) return setErrors({ code: 'Verification code is required' });
+    if (otp.length !== 6) return setErrors({ code: 'Verification code must be 6 digits' });
 
     setIsVerifying(true);
     try {
-      await axios.post('/api/auth/verify-code', { email, verificationCode });
+      await axios.post('/api/auth/verify-code', { email, otp });
       setIsVerifying(false);
-      updateData({ verificationCode });
+      updateData({ otp });
       onNext();
     } catch (err) {
       setIsVerifying(false);
@@ -145,9 +147,9 @@ const EmailVerification = ({ data, updateData, onNext }) => {
             <input
               type="text"
               id="code"
-              value={verificationCode}
+              value={otp}
               onChange={(e) =>
-                setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
               }
               className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-300 text-center text-2xl font-mono tracking-widest ${
                 errors.code ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-orange-300'

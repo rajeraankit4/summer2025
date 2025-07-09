@@ -15,6 +15,7 @@ export const sendVerificationCode = async (req, res) => {
 
   try {
     const otp = generateOtp();
+    console.log(otp);
     await sendOtpVerificationEmail(email, otp);
     await Otp.create({ email, otp });
 
@@ -28,6 +29,7 @@ export const sendVerificationCode = async (req, res) => {
 
 export const verifySignupOtp = async (req, res) => {
   const { email, otp } = req.body;
+  console.log("OTP verification request received:", { email, otp });
   if (!email || !otp) return res.status(400).json({ error: "Email and OTP required" });
 
   try {
