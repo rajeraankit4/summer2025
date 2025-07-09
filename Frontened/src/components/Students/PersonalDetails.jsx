@@ -22,6 +22,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
     firstname: data?.firstName || "",
     lastname: data?.lastName || "",
     phone: data?.phone || "",
+    email: data?.email || "",
     DOB: data?.dateOfBirth || "",
     address: data?.address || "",
     city: data?.city || "",
@@ -71,7 +72,9 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
           `http://localhost:5000/api/personaldetail/view`
         );
         const studentExists = existingStudent.data.personaldetailList?.some(
-          (student) => student.studentid === formData.studentid
+          (student) =>
+            student.studentid === formData.studentid ||
+            student.email === formData.email
         );
 
         if (!studentExists) {
@@ -119,6 +122,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         firstName: formData.firstname,
         lastName: formData.lastname,
         phone: formData.phone,
+        email: formData.email,
         dateOfBirth: formData.DOB,
         address: formData.address,
         city: formData.city,
@@ -149,6 +153,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       "firstname",
       "lastname",
       "phone",
+      "email",
       "DOB",
       "address",
       "city",
@@ -260,6 +265,25 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
                 />
                 <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Email *
+              </label>
+              <input
+                value={formData.email}
+                onChange={getValue}
+                type="email"
+                id="email"
+                name="email"
+                className="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+                placeholder="student@university.edu"
+              />
             </div>
 
             {/* DOB */}
@@ -467,9 +491,10 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
               <strong>
                 {detail.firstname} {detail.lastname}
               </strong>{" "}
-              — {detail.phone}, DOB: {detail.DOB}- address: {detail.address}-
-              {detail.city}- {detail.state}-{detail.zipcode}-{detail.studentid}-
-              {detail.hostelblock}-{detail.roomno}
+              — {detail.phone}, Email: {detail.email}, DOB: {detail.DOB}-
+              address: {detail.address}-{detail.city}- {detail.state}-
+              {detail.zipcode}-{detail.studentid}-{detail.hostelblock}-
+              {detail.roomno}
             </li>
           ))}
         </ul>

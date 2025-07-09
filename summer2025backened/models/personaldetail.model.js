@@ -13,6 +13,11 @@ const personaldetailSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   DOB: {
     type: String,
     required: true,

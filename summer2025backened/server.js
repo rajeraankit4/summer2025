@@ -12,6 +12,7 @@ import studentRoutes from "./routes/student.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import menuRoutes from "./routes/menu.routes.js";
 import personaldetailRouter from "./routes/personaldetailRoutes.js";
+import testRoutes from "./routes/test.routes.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/personaldetail", personaldetailRouter); // ✅ Fixed semicolon
+app.use("/api/test", testRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)

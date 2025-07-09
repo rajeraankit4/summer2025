@@ -1,4 +1,8 @@
 import personaldetailModel from "../models/personaldetail.model.js";
+import User from "../models/user.model.js";
+import { sendLoginCredentials } from "../middleware/nodemailer.js";
+import { generateReadablePassword } from "../utils/passwordGenerator.js";
+import bcrypt from "bcrypt";
 
 // Insert a new personal detail
 export const personaldetailInsert = async (req, res) => {
@@ -7,6 +11,7 @@ export const personaldetailInsert = async (req, res) => {
       firstname,
       lastname,
       phone,
+      email,
       DOB,
       address,
       city,
@@ -18,11 +23,13 @@ export const personaldetailInsert = async (req, res) => {
     } = req.body;
 
     // Check if student already exists
-    const existingStudent = await personaldetailModel.findOne({ studentid });
+    const existingStudent = await personaldetailModel.findOne({
+      $or: [{ studentid }, { email }],
+    });
     if (existingStudent) {
       return res.status(400).send({
         status: 0,
-        message: "Student with this ID already exists",
+        message: "Student with this ID or email already exists",
       });
     }
 
@@ -30,6 +37,7 @@ export const personaldetailInsert = async (req, res) => {
       firstname,
       lastname,
       phone,
+      email,
       DOB,
       address,
       city,
@@ -51,7 +59,7 @@ export const personaldetailInsert = async (req, res) => {
     if (err.code === 11000) {
       res.status(400).send({
         status: 0,
-        message: "Student with this ID already exists",
+        message: "Student with this ID or email already exists",
       });
     } else {
       res.status(500).send({
@@ -137,9 +145,96 @@ export const verifyDocuments = async (req, res) => {
     student.verificationStatus = status;
     await student.save();
 
-    res.status(200).json({ message: `Documents ${status} successfully` });
+    // If approved, create user account and send login credentials
+    if (status === "approved") {
+      try {
+        // Check if user account already exists
+        const existingUser = await User.findOne({ email: student.email });
+
+        if (!existingUser) {
+          // Generate secure password
+          const generatedPassword = generateReadablePassword(10);
+          const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+          // Create user account
+          const newUser = new User({
+            email: student.email,
+            password: hashedPassword,
+            role: "student",
+            isVerified: true,
+          });
+
+          await newUser.save();
+
+          // Send login credentials email
+          const fullName = `${student.firstname} ${student.lastname}`;
+          await sendLoginCredentials(
+            student.email,
+            fullName,
+            student.email,
+            generatedPassword
+          );
+
+          console.log(`Login credentials sent to ${student.email}`);
+        }
+      } catch (emailError) {
+        console.error(
+          "Error creating user account or sending email:",
+          emailError
+        );
+        // Still return success for document verification even if email fails
+      }
+    }
+
+    res.status(200).json({
+      message: `Documents ${status} successfully`,
+      emailSent: status === "approved" ? true : false,
+    });
   } catch (error) {
     console.error("Verification error:", error);
     res.status(500).json({ message: "Server error during verification" });
+  }
+};
+
+// Get pending verifications for admin
+export const getPendingVerifications = async (req, res) => {
+  try {
+    const pendingStudents = await personaldetailModel.find({
+      verificationStatus: "pending",
+      documents: { $exists: true, $not: { $size: 0 } },
+    });
+
+    res.status(200).json({
+      status: 1,
+      pendingVerifications: pendingStudents,
+    });
+  } catch (error) {
+    console.error("Error fetching pending verifications:", error);
+    res.status(500).json({
+      status: 0,
+      message: "Server error fetching pending verifications",
+    });
+  }
+};
+
+// Get all verifications (for admin dashboard)
+export const getAllVerifications = async (req, res) => {
+  try {
+    const allStudents = await personaldetailModel
+      .find({
+        documents: { $exists: true, $not: { $size: 0 } },
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      status: 1,
+      verifications: allStudents,
+    });
+  } catch (error) {
+    console.error("Error fetching all verifications:", error);
+    res.status(500).json({
+      status: 0,
+      message: "Server error fetching verifications",
+    });
   }
 };

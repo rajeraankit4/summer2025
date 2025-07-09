@@ -4,6 +4,8 @@ import {
   personaldetailList,
   uploadDocuments,
   verifyDocuments,
+  getPendingVerifications,
+  getAllVerifications,
 } from "../controllers/personaldetailController.js";
 import upload from "../middleware/upload.js";
 
@@ -20,6 +22,10 @@ router.post(
   uploadDocuments
 );
 router.patch("/verify-documents/:studentId", verifyDocuments);
+
+// Admin verification management routes
+router.get("/pending-verifications", getPendingVerifications);
+router.get("/all-verifications", getAllVerifications);
 
 // Export the router
 export default router;
