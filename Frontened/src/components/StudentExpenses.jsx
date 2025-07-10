@@ -66,12 +66,15 @@ const StudentExpenses = () => {
     try {
       const token = localStorage.getItem("token");
 
+      // Ensure description is not empty, provide default if needed
+      const description = expenseData.description?.trim() || "Mess Expense";
+      
       const response = await axios.post(
         "/api/mess-staff/add-expense",
         {
           studentid: expenseData.studentid.toUpperCase(),
           amount: parseFloat(expenseData.amount),
-          description: expenseData.description,
+          description: description,
         },
         {
           headers: {
@@ -84,7 +87,7 @@ const StudentExpenses = () => {
         id: Date.now(),
         studentid: expenseData.studentid.toUpperCase(),
         amount: expenseData.amount,
-        description: expenseData.description,
+        description: description,
         date: new Date().toISOString().split("T")[0],
       };
 
