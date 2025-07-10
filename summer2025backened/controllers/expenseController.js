@@ -6,17 +6,20 @@ import messexpenses from "../models/messtransaction.model.js";
 export const createExpense = async (req, res) => {
   try {
     const { studentid, amount, description } = req.body;
+    console.log("Request body:", req.body);
 
     if (!studentid || !amount) {
       return res.status(400).json({ message: "Student ID and amount are required" });
     }
 
     const studentDetail = await personaldetailModel.findOne({ studentid });
+    
     if (!studentDetail) {
       return res.status(404).json({ message: "Student not found" });
     }
 
     const user = await User.findOne({ studentDetails: studentDetail._id });
+    console.log("User found:", user);
     if (!user) {
       return res.status(404).json({ message: "User not linked to this student" });
     }

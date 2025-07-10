@@ -131,6 +131,7 @@ export const uploadDocuments = async (req, res) => {
 };
 
 // Verify documents for a student
+// Verify documents for a student
 export const verifyDocuments = async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -156,12 +157,13 @@ export const verifyDocuments = async (req, res) => {
           const generatedPassword = generateReadablePassword(10);
           const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-          // Create user account
+          // ✅ Create user account and link personal details
           const newUser = new User({
             email: student.email,
             password: hashedPassword,
             role: "student",
             isVerified: true,
+            studentDetails: student._id, // ✅ Linking the personaldetail reference
           });
 
           await newUser.save();
@@ -195,6 +197,7 @@ export const verifyDocuments = async (req, res) => {
     res.status(500).json({ message: "Server error during verification" });
   }
 };
+
 
 // Get pending verifications for admin
 export const getPendingVerifications = async (req, res) => {
