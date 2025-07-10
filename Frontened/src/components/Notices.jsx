@@ -9,7 +9,7 @@ const NoticeBoard = () => {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const res = await axios.get("/api/notices");
+        const res = await axios.get("/notices");
         setNotices(res.data.reverse());
       } catch (err) {
         console.error("Failed to fetch notices:", err);
@@ -32,7 +32,7 @@ const NoticeBoard = () => {
       const noticeData = { text: newNotice, date: formattedDate };
 
       try {
-        await axios.post("/api/notices", noticeData);
+        await axios.post("/notices", noticeData);
         setNotices([noticeData, ...notices]);
         setNewNotice("");
       } catch (err) {

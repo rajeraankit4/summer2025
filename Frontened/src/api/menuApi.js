@@ -3,7 +3,7 @@ import api from "./axiosConfig";
 // Get weekly menu
 export const getWeeklyMenu = async () => {
   try {
-    const response = await api.get("/api/menu/weekly");
+    const response = await api.get("/menu/weekly");
     return response.data;
   } catch (error) {
     console.error("Error fetching weekly menu:", error);
@@ -14,7 +14,7 @@ export const getWeeklyMenu = async () => {
 // Get menu for specific day
 export const getDayMenu = async (day) => {
   try {
-    const response = await api.get(`/api/menu/day/${day}`);
+    const response = await api.get(`/menu/day/${day}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching menu for ${day}:`, error);
@@ -25,7 +25,7 @@ export const getDayMenu = async (day) => {
 // Create new menu (Admin only)
 export const createMenu = async (menuData) => {
   try {
-    const response = await api.post("/api/menu", menuData);
+    const response = await api.post("/menu", menuData);
     return response.data;
   } catch (error) {
     console.error("Error creating menu:", error);
