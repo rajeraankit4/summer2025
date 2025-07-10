@@ -36,7 +36,7 @@ export const createMenu = async (menuData) => {
 // Update existing menu (Admin only)
 export const updateMenu = async (id, menuData) => {
   try {
-    const response = await api.put(`/api/menu/${id}`, menuData);
+    const response = await api.put(`/menu/${id}`, menuData);
     return response.data;
   } catch (error) {
     console.error("Error updating menu:", error);
@@ -47,7 +47,7 @@ export const updateMenu = async (id, menuData) => {
 // Delete menu (Admin only)
 export const deleteMenu = async (id) => {
   try {
-    const response = await api.delete(`/api/menu/${id}`);
+    const response = await api.delete(`/menu/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting menu:", error);
@@ -58,7 +58,7 @@ export const deleteMenu = async (id) => {
 // Get all menus with pagination (Admin only)
 export const getAllMenus = async (params = {}) => {
   try {
-    const response = await api.get("/api/menu/all", { params });
+    const response = await api.get("/menu/all", { params });
     return response.data;
   } catch (error) {
     console.error("Error fetching all menus:", error);
