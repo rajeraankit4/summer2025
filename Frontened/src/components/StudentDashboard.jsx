@@ -6,12 +6,13 @@ import axios from "../api/axiosConfig";
 const StudentDashboard = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [mealsThisMonth, setMealsThisMonth] = useState(0);
+  const [avgDailyExpense, setAvgDailyExpense] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        // Temporarily using mock data instead of API call
         const mockStudent = {
           firstName: "John",
           lastName: "Doe",
@@ -29,8 +30,12 @@ const StudentDashboard = () => {
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get("/api/notices");
-        // Sort by latest first and take only the most recent ones
+        const token = localStorage.getItem("token");
+        const response = await axios.get("/notices", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const sortedNotices = response.data.sort(
           (a, b) =>
             new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
@@ -38,36 +43,79 @@ const StudentDashboard = () => {
         setNotifications(sortedNotices);
       } catch (err) {
         console.error("Failed to fetch notifications:", err);
-        // Fallback to mock data if API fails
-        const mockNotifications = [
+        setNotifications([
           {
             _id: "1",
             text: "Unable to load latest notices. Please check your connection.",
             date: "Now",
           },
-        ];
-        setNotifications(mockNotifications);
+        ]);
       }
     };
 
+    const fetchExpenseStats = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Authentication token not found.");
+
+        const response = await axios.get("/mess-staff/transactions", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const expenses = Array.isArray(response.data)
+          ? response.data
+          : response.data?.data || [];
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const thisMonthExpenses = expenses.filter((expense) => {
+          const date = new Date(expense.date);
+          return (
+            date.getMonth() === currentMonth &&
+            date.getFullYear() === currentYear
+          );
+        });
+
+        setMealsThisMonth(thisMonthExpenses.length);
+
+        const totalAmount = thisMonthExpenses.reduce(
+          (acc, expense) => acc + Number(expense.amount),
+          0
+        );
+
+        const average =
+          thisMonthExpenses.length > 0
+            ? Math.round(totalAmount / thisMonthExpenses.length)
+            : 0;
+
+        setAvgDailyExpense(average);
+      } catch (err) {
+        console.error("Failed to fetch expense stats:", err);
+      }
+    };
+
+    // 🟢 Call all async functions
     fetchStudentData();
     fetchNotifications();
+    fetchExpenseStats();
   }, []);
 
-  if (!currentUser) {
-    return <div>Loading...</div>;
-  }
+  if (!currentUser) return <div>Loading...</div>;
 
   const quickStats = [
     {
       label: "Meals This Month",
-      value: "45", // This would be calculated from user data
+      value: mealsThisMonth.toString(),
       icon: UtensilsCrossed,
       color: "text-blue-600",
     },
     {
       label: "Avg Daily Expense",
-      value: "₹85", // This would be calculated from user data
+      value: `₹${avgDailyExpense}`,
       icon: Receipt,
       color: "text-purple-600",
     },
@@ -87,12 +135,8 @@ const StudentDashboard = () => {
           <div key={index} className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">
-                  {stat.label}
-                </p>
-                <p className={`text-2xl font-bold ${stat.color}`}>
-                  {stat.value}
-                </p>
+                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
               </div>
               <stat.icon className={`h-8 w-8 ${stat.color}`} />
             </div>
@@ -100,10 +144,9 @@ const StudentDashboard = () => {
         ))}
       </div>
 
+      {/* Notices Section */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        {/* Main Content */}
         <div className="space-y-6">
-          {/* Recent Notifications */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Bell className="h-5 w-5 mr-2" />
@@ -121,9 +164,7 @@ const StudentDashboard = () => {
                     className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400"
                   >
                     <p className="text-sm text-gray-800">{notification.text}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {notification.date}
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{notification.date}</p>
                   </div>
                 ))
               )}

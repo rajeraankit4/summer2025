@@ -54,7 +54,6 @@ export const getMessTransactionsByRole = async (req, res) => {
     const { role, email } = req.user;
     const trimmedEmail = email.trim();
 
-    console.log("Fetching transactions for:", trimmedEmail);
     let transactions = [];
 
     if (role === "superadmin" || role === "messadmin") {
@@ -69,9 +68,6 @@ export const getMessTransactionsByRole = async (req, res) => {
         message: "Unauthorized access",
       });
     }
-
-    console.log("Raw DB result:", transactions);
-
     const formatted = transactions.map(({ studentid, amount, description, date }) => ({
       studentid,
       amount,
