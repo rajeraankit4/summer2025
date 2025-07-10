@@ -483,6 +483,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       </div>
 
       {/* Show Data */}
+      {/*
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-2">Saved Personal Details:</h2>
         <ul className="space-y-2">
@@ -499,6 +500,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
           ))}
         </ul>
       </div>
+      */}
     </div>
   );
 };
