@@ -62,7 +62,6 @@ export const getMessTransactionsByRole = async (req, res) => {
     const { role, email } = req.user;
     const trimmedEmail = email.trim();
 
-    console.log("Fetching transactions for:", trimmedEmail);
     let transactions = [];
 
     if (role === "superadmin" || role === "messadmin") {
@@ -80,6 +79,7 @@ export const getMessTransactionsByRole = async (req, res) => {
       });
     }
 
+
     console.log("Raw DB result:", transactions);
 
     const formatted = transactions.map(
@@ -90,6 +90,7 @@ export const getMessTransactionsByRole = async (req, res) => {
         date,
       })
     );
+
 
     console.log("Formatted transactions:", formatted);
 
