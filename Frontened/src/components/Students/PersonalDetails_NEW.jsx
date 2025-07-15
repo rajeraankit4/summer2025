@@ -4,10 +4,12 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   User,
+  Home,
   Phone,
   Calendar,
   MapPin,
   GraduationCap,
+  UtensilsCrossed,
 } from "lucide-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -18,7 +20,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   const [formData, setFormData] = useState({
     firstname: data?.firstName || "",
     lastname: data?.lastName || "",
-    phone: data?.phone?.toString() || "",
+    phone: data?.phone || "",
     DOB: data?.dateOfBirth || "",
     address: data?.address || "",
     city: data?.city || "",
@@ -31,25 +33,39 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   });
 
   const handleNext = async (e) => {
+    // Prevent any default behavior and event propagation
     e.preventDefault();
     e.stopPropagation();
 
-    if (isSubmitting) return;
+    console.log("handleNext called, isSubmitting:", isSubmitting);
+
+    // Prevent double submission
+    if (isSubmitting) {
+      console.log("Already submitting, returning");
+      return;
+    }
 
     try {
+      console.log("Starting submission process");
       setIsSubmitting(true);
 
+      // Validate form before saving
       if (!validateForm()) {
+        console.log("Form validation failed");
         setIsSubmitting(false);
         return;
       }
 
+      console.log("Form validation passed, saving data");
       await axios.post(
         "http://localhost:5000/api/personaldetail/insert",
         formData
       );
       toast.success("Personal details saved successfully");
 
+      console.log("Data saved, updating parent and navigating");
+
+      // Map the form data to match the parent component's expected field names
       const mappedData = {
         firstName: formData.firstname,
         lastName: formData.lastname,
@@ -64,7 +80,10 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         roomNumber: formData.roomno,
       };
 
+      // Update parent data first
       updateData(mappedData);
+
+      // Wait a moment for state to update, then navigate
       setTimeout(() => {
         onNext();
       }, 100);
@@ -92,32 +111,22 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
     ];
 
     for (let field of requiredFields) {
-      if (!formData[field] || formData[field].toString().trim() === "") {
+      if (!formData[field] || formData[field].trim() === "") {
         toast.error(`Please fill out ${field} field.`);
         return false;
       }
     }
 
-    // ✅ Strict 10-digit phone number validation
-    if (!/^\d{10}$/.test(formData.phone)) {
-      toast.error("Phone number must be exactly 10 digits.");
-      return false;
-    }
-
     return true;
   };
 
+  // ✅ Function to get form values
   const getValue = (e) => {
     const { name, value } = e.target;
-
-    if (name === "phone") {
-      // Allow only digits, and limit to 10
-      if (!/^\d{0,10}$/.test(value)) return;
-    }
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Get all data from backend
   const getAllpersonalDetails = () => {
     axios
       .get("http://localhost:5000/api/personaldetail/view")
@@ -137,198 +146,280 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Personal Info Section */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-orange-600" />
-          Personal Information
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* First Name */}
-          <div>
-            <label htmlFor="firstname" className="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
-            <input
-              type="text"
-              name="firstname"
-              value={formData.firstname}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="John"
-            />
-          </div>
-
-          {/* Last Name */}
-          <div>
-            <label htmlFor="lastname" className="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
-            <input
-              type="text"
-              name="lastname"
-              value={formData.lastname}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="Doe"
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">Phone *</label>
-            <div className="relative">
+      <div>
+        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-orange-600" />
+            Personal Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* First Name */}
+            <div>
+              <label
+                htmlFor="firstname"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                First Name *
+              </label>
               <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                
+                value={formData.firstname}
                 onChange={getValue}
-                maxLength={10}
-                className="w-full px-4 py-3 pl-12 border-2 rounded-xl border-gray-200"
-                placeholder="1234567890"
+                type="text"
+                id="firstname"
+                name="firstname"
+                className="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+                placeholder="John"
               />
-              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <label
+                htmlFor="lastname"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Last Name *
+              </label>
+              <input
+                value={formData.lastname}
+                onChange={getValue}
+                type="text"
+                id="lastname"
+                name="lastname"
+                className="w-full px-4 py-3 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+                placeholder="Doe"
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Phone *
+              </label>
+              <div className="relative">
+                <input
+                  value={formData.phone}
+                  onChange={getValue}
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  className="w-full px-4 py-3 pl-12 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+                  placeholder="1234567890"
+                />
+                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+            </div>
+
+            {/* DOB */}
+            <div>
+              <label
+                htmlFor="DOB"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Date of Birth *
+              </label>
+              <div className="relative">
+                <input
+                  value={formData.DOB}
+                  onChange={getValue}
+                  type="date"
+                  id="DOB"
+                  name="DOB"
+                  className="w-full px-4 py-3 pl-12 border-2 rounded-xl border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+                />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* DOB */}
-          <div>
-            <label htmlFor="DOB" className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
-            <div className="relative">
+        <br />
+        {/* Address Information */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-blue-600" />
+            Address Information
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label
+                htmlFor="address"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Address *
+              </label>
               <input
-                type="date"
-                name="DOB"
-                value={formData.DOB}
+                value={formData.address}
                 onChange={getValue}
-                className="w-full px-4 py-3 pl-12 border-2 rounded-xl border-gray-200"
+                type="text"
+                id="address"
+                name="address"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 border-gray-200 hover:border-blue-300"
+                placeholder="123 Main Street"
               />
-              <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                City *
+              </label>
+              <input
+                value={formData.city}
+                onChange={getValue}
+                type="text"
+                id="city"
+                name="city"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 border-gray-200 hover:border-blue-300"
+                placeholder="New York"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="state"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                State *
+              </label>
+              <input
+                value={formData.state}
+                onChange={getValue}
+                type="text"
+                id="state"
+                name="state"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 border-gray-200 hover:border-blue-300"
+                placeholder="NY"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="zipCode"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                ZIP Code *
+              </label>
+              <input
+                value={formData.zipcode}
+                onChange={getValue}
+                type="text"
+                id="zipcode"
+                name="zipcode"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-300 border-gray-200 hover:border-blue-300"
+                placeholder="10001"
+              />
             </div>
           </div>
         </div>
-      </div>
+        <br />
 
-      {/* Address Info Section */}
-      <br />
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
-          Address Information
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">Address *</label>
-            <input
-              name="address"
-              value={formData.address}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="123 Main Street"
-            />
+        {/* Student & Hostel Information */}
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-purple-600" />
+            Student & Hostel Details
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label
+                htmlFor="studentId"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Student ID *
+              </label>
+              <input
+                value={formData.studentid}
+                onChange={getValue}
+                type="text"
+                id="studentid"
+                name="studentid"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 border-gray-200 hover:border-purple-300"
+                placeholder="STU123456"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="hostelBlock"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Hostel Block *
+              </label>
+              <input
+                value={formData.hostelblock}
+                onChange={getValue}
+                type="text"
+                id="hostelblock"
+                name="hostelblock"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 border-gray-200 hover:border-purple-300"
+                placeholder="block-4"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="roomNumber"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Room Number *
+              </label>
+              <input
+                value={formData.roomno}
+                onChange={getValue}
+                type="text"
+                id="roomno"
+                name="roomno"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 border-gray-200 hover:border-purple-300"
+                placeholder="101"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
-            <input
-              name="city"
-              value={formData.city}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="New York"
-            />
-          </div>
-          <div>
-            <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">State *</label>
-            <input
-              name="state"
-              value={formData.state}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="NY"
-            />
-          </div>
-          <div>
-            <label htmlFor="zipcode" className="block text-sm font-semibold text-gray-700 mb-2">ZIP Code *</label>
-            <input
-              name="zipcode"
-              value={formData.zipcode}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="10001"
-            />
-          </div>
+        </div>
+
+        <div className="flex justify-between mt-10">
+          <button
+            type="button"
+            onClick={onPrev}
+            className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Previous
+          </button>
+
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={isSubmitting}
+            className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSubmitting ? "Saving..." : "Continue to Documents"}
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Hostel Info Section */}
-      <br />
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <GraduationCap className="w-5 h-5 text-purple-600" />
-          Student & Hostel Details
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label htmlFor="studentid" className="block text-sm font-semibold text-gray-700 mb-2">Student ID *</label>
-            <input
-              name="studentid"
-              value={formData.studentid}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="STU123456"
-            />
-          </div>
-          <div>
-            <label htmlFor="hostelblock" className="block text-sm font-semibold text-gray-700 mb-2">Hostel Block *</label>
-            <input
-              name="hostelblock"
-              value={formData.hostelblock}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="Block-A"
-            />
-          </div>
-          <div>
-            <label htmlFor="roomno" className="block text-sm font-semibold text-gray-700 mb-2">Room Number *</label>
-            <input
-              name="roomno"
-              value={formData.roomno}
-              onChange={getValue}
-              className="w-full px-4 py-3 border-2 rounded-xl border-gray-200"
-              placeholder="101"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-10">
-        <button
-          type="button"
-          onClick={onPrev}
-          className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition duration-300 font-semibold flex items-center gap-3 shadow-lg hover:shadow-xl"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Previous
-        </button>
-
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={isSubmitting}
-          className={`px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold flex items-center gap-3 shadow-lg transition duration-300 transform hover:scale-105 ${
-            isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:from-orange-600 hover:to-amber-600"
-          }`}
-        >
-          {isSubmitting ? "Saving..." : "Continue to Documents"}
-          <ArrowRight className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Show Saved Data */}
+      {/* Show Data */}
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-2">Saved Personal Details:</h2>
         <ul className="space-y-2">
           {PersonalDetails.map((detail, index) => (
             <li key={index} className="p-3 border rounded shadow-sm bg-white">
-              <strong>{detail.firstname} {detail.lastname}</strong> — {detail.phone}, DOB: {detail.DOB} — {detail.address}, {detail.city}, {detail.state}, {detail.zipcode}, {detail.studentid}, {detail.hostelblock}, {detail.roomno}
+              <strong>
+                {detail.firstname} {detail.lastname}
+              </strong>{" "}
+              — {detail.phone}, DOB: {detail.DOB}- address: {detail.address}-
+              {detail.city}- {detail.state}-{detail.zipcode}-{detail.studentid}-
+              {detail.hostelblock}-{detail.roomno}
             </li>
           ))}
         </ul>
