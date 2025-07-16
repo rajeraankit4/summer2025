@@ -246,12 +246,12 @@ const StudentExpenses = () => {
     body: expenses.map((e) => [
       e.description,
       new Date(e.date).toLocaleDateString(),
-      `₹${e.amount}`,
+      `Rs. ${e.amount}`,
     ]),
   });
 
   const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  doc.text(`Total Expense: ₹${total}`, 14, doc.lastAutoTable.finalY + 10);
+  doc.text(`Total Expense: Rs. ${total}`, 14, doc.lastAutoTable.finalY + 10);
 
   doc.save("expenses_report.pdf");
 };
@@ -307,7 +307,7 @@ const StudentExpenses = () => {
                     </div>
                   </div>
                   <span className="font-semibold text-red-600">
-                    -₹{expense.amount}
+                    -Rs. {expense.amount}
                   </span>
                 </div>
               ))
@@ -353,7 +353,7 @@ const StudentNotifications = () => (
                   {i % 3 === 0
                     ? "Mess will be closed on Sunday for maintenance."
                     : i % 3 === 1
-                    ? "Today's meal expense: ₹85"
+                    ? "Today's meal expense: Rs. 85"
                     : "Special dishes added to this week's menu!"}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
