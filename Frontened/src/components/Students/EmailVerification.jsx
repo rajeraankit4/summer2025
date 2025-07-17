@@ -16,6 +16,7 @@ const EmailVerification = ({ data, updateData, onNext }) => {
   const [timer, setTimer] = useState(0);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,21 +35,24 @@ const EmailVerification = ({ data, updateData, onNext }) => {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const sendVerificationCode = async () => {
-    setErrors({});
-    if (!email) return setErrors({ email: 'Email is required' });
-    if (!validateEmail(email)) return setErrors({ email: 'Please enter a valid email address' });
+  setErrors({});
+  if (!email) return setErrors({ email: 'Email is required' });
+  if (!validateEmail(email)) return setErrors({ email: 'Please enter a valid email address' });
 
-    try {
-      await axios.post('/api/auth/send-verification-code', { email });
-      setIsEmailSent(true);
-      setTimer(60);
-      updateData({ email });
-      setSuccessMessage("Verification code sent successfully!");
-    } catch (err) {
-      console.error("Error sending verification code:", err);
-      setErrors({ email: err.response?.data?.error || 'Failed to send verification code' });
-    }
-  };
+  setIsSending(true);
+  try {
+    await axios.post('/api/auth/send-verification-code', { email });
+    setIsEmailSent(true);
+    setTimer(60);
+    updateData({ email });
+    setSuccessMessage("Verification code sent successfully!");
+  } catch (err) {
+    setErrors({ email: err.response?.data?.error || 'Failed to send verification code' });
+  } finally {
+    setIsSending(false);
+  }
+};
+
 
   const verifyCode = async () => {
     setErrors({});
@@ -115,12 +119,23 @@ const EmailVerification = ({ data, updateData, onNext }) => {
           </div>
 
           <button
-            onClick={sendVerificationCode}
-            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 px-6 rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold text-lg flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            <Send className="w-6 h-6" />
-            Send Verification Code
-          </button>
+  onClick={sendVerificationCode}
+  disabled={isSending}
+  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 px-6 rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 font-semibold text-lg flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+>
+  {isSending ? (
+    <>
+      <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+      Sending...
+    </>
+  ) : (
+    <>
+      <Send className="w-6 h-6" />
+      Send Verification Code
+    </>
+  )}
+</button>
+
 
           <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4">
             <p className="text-orange-800 text-sm text-center">
