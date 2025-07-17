@@ -32,7 +32,7 @@ const studentNavItems = [
     icon: <Receipt size={18} />,
   },
   {
-    name: "Notifications",
+    name: "Notices",
     path: "/student/notifications",
     icon: <Bell size={18} />,
   },
@@ -146,13 +146,6 @@ export default function StudentLayout() {
 
           {/* Profile Dropdown */}
           <div className="flex items-center space-x-4">
-            {/* Notification Bell */}
-            <div className="relative">
-              <Bell className="h-6 w-6 text-gray-600 cursor-pointer hover:text-blue-600" />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span>
-            </div>
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>

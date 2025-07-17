@@ -170,7 +170,7 @@ const StudentDashboard = () => {
               )}
             </div>
             <button
-              onClick={() => navigate("/student/notices")}
+              onClick={() => navigate("/student/notifications")}
               className="w-full mt-4 text-orange-600 text-sm font-medium hover:text-orange-800 transition-colors duration-200"
             >
               View All Notices
