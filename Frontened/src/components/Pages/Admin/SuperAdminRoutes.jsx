@@ -10,6 +10,7 @@ import CanteenManagement from "../../CanteenManagment";
 import Billing from "../../Billing";
 import Notices from "../../Notices";
 import Settings from "../../Settings";
+import StudentTransactions from "../../StudentTransactions";
 
 const SuperAdmin = () => {
   return (
@@ -21,6 +22,7 @@ const SuperAdmin = () => {
         <Route path="menu" element={<MenuManagement />} />
         <Route path="mess" element={<MessManagement />} />
         <Route path="canteen" element={<CanteenManagement />} />
+        <Route path="student-transactions" element={<StudentTransactions />} />
         <Route path="billing" element={<Billing />} />
         <Route path="notices" element={<Notices />} />
         <Route path="settings" element={<Settings />} />
