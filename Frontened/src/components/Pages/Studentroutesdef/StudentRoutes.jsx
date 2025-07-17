@@ -218,44 +218,43 @@ const StudentExpenses = () => {
     );
 
   const downloadPDF = () => {
-  if (!student) {
-    alert("Student info not loaded yet!");
-    return;
-  }
+    if (!student) {
+      alert("Student info not loaded yet!");
+      return;
+    }
 
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  doc.setFontSize(18);
-  doc.text("Student Expenses Report", 14, 20);
+    doc.setFontSize(18);
+    doc.text("Student Expenses Report", 14, 20);
 
-  doc.setFontSize(12);
-  doc.text(`Name: ${student.firstname} ${student.lastname}`, 14, 30);
-  doc.text(`Student ID: ${student.studentid}`, 14, 38);
-  doc.text(`Email: ${student.email}`, 14, 46);
-  doc.text(`Phone: ${student.phone}`, 14, 54);
-  doc.text(`Room: ${student.hostelblock} - ${student.roomno}`, 14, 62);
-  doc.text(
-    `Address: ${student.address}, ${student.city}, ${student.state} - ${student.zipcode}`,
-    14,
-    70
-  );
+    doc.setFontSize(12);
+    doc.text(`Name: ${student.firstname} ${student.lastname}`, 14, 30);
+    doc.text(`Student ID: ${student.studentid}`, 14, 38);
+    doc.text(`Email: ${student.email}`, 14, 46);
+    doc.text(`Phone: ${student.phone}`, 14, 54);
+    doc.text(`Room: ${student.hostelblock} - ${student.roomno}`, 14, 62);
+    doc.text(
+      `Address: ${student.address}, ${student.city}, ${student.state} - ${student.zipcode}`,
+      14,
+      70
+    );
 
-  autoTable(doc, {
-    startY: 80,
-    head: [["Description", "Date", "Amount"]],
-    body: expenses.map((e) => [
-      e.description,
-      new Date(e.date).toLocaleDateString(),
-      `Rs. ${e.amount}`,
-    ]),
-  });
+    autoTable(doc, {
+      startY: 80,
+      head: [["Description", "Date", "Amount"]],
+      body: expenses.map((e) => [
+        e.description,
+        new Date(e.date).toLocaleDateString(),
+        `Rs. ${e.amount}`,
+      ]),
+    });
 
-  const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  doc.text(`Total Expense: Rs. ${total}`, 14, doc.lastAutoTable.finalY + 10);
+    const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+    doc.text(`Total Expense: Rs. ${total}`, 14, doc.lastAutoTable.finalY + 10);
 
-  doc.save("expenses_report.pdf");
-};
-
+    doc.save("expenses_report.pdf");
+  };
 
   return (
     <div className="space-y-6">
@@ -265,12 +264,11 @@ const StudentExpenses = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Recent Expenses</h2>
             <button
-  onClick={downloadPDF}
-  className="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg text-sm"
->
-  Download Report
-</button>
-
+              onClick={downloadPDF}
+              className="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg text-sm"
+            >
+              Download Report
+            </button>
           </div>
           <div className="space-y-3">
             {expenses.length === 0 ? (
@@ -320,54 +318,71 @@ const StudentExpenses = () => {
 };
 
 // ----- Notifications -----
-const StudentNotifications = () => (
-  <div className="space-y-6">
-    <h1 className="text-3xl font-bold text-gray-800 mb-6">🔔 Notifications</h1>
-    <div className="space-y-4">
-      {Array.from({ length: 8 }, (_, i) => (
-        <div key={i} className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3">
-              <div
-                className={`p-2 rounded-full ${
-                  i % 3 === 0
-                    ? "bg-blue-100"
-                    : i % 3 === 1
-                    ? "bg-green-100"
-                    : "bg-yellow-100"
-                }`}
-              >
-                <span className="text-sm">
-                  {i % 3 === 0 ? "📢" : i % 3 === 1 ? "💰" : "🍽️"}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">
-                  {i % 3 === 0
-                    ? "System Announcement"
-                    : i % 3 === 1
-                    ? "Expense Update"
-                    : "Menu Update"}
-                </h3>
-                <p className="text-gray-600 mt-1">
-                  {i % 3 === 0
-                    ? "Mess will be closed on Sunday for maintenance."
-                    : i % 3 === 1
-                    ? "Today's meal expense: Rs. 85"
-                    : "Special dishes added to this week's menu!"}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  {i + 1} hour{i !== 0 && "s"} ago
-                </p>
-              </div>
+const StudentNotifications = () => {
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get("/api/notices", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("Notices API response:", response.data);
+
+    let data = [];
+
+    if (Array.isArray(response.data)) {
+      data = response.data;
+    } else if (Array.isArray(response.data.data)) {
+      data = response.data.data;
+    } else if (Array.isArray(response.data.notices)) {
+      data = response.data.notices;
+    } else {
+      throw new Error("Unexpected API response format.");
+    }
+
+    const sorted = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+    setNotices(sorted);
+  } catch (err) {
+    console.error("Error fetching notices:", err);
+    setError("Failed to load notices.");
+  } finally {
+    setLoading(false);
+  }
+};
+    fetchNotices();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-4">🔔 Notices</h1>
+
+      {loading ? (
+        <div className="text-center">Loading...</div>
+      ) : error ? (
+        <p className="text-red-600">{error}</p>
+      ) : notices.length === 0 ? (
+        <p className="text-gray-500">No notices available.</p>
+      ) : (
+        <div className="space-y-4">
+          {notices.map((notice, index) => (
+            <div
+              key={notice._id || index}
+              className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded"
+            >
+              <p className="text-gray-800">{notice.text}</p>
+              <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">×</button>
-          </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 // ----- Profile -----
 const StudentProfile = () => {
