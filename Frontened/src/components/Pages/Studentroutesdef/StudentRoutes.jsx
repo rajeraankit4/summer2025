@@ -372,7 +372,7 @@ const StudentNotifications = () => {
           {notices.map((notice, index) => (
             <div
               key={notice._id || index}
-              className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded"
+              className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded"
             >
               <p className="text-gray-800">{notice.text}</p>
               <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
