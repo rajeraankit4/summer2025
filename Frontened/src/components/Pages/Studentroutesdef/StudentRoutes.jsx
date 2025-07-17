@@ -325,289 +325,59 @@ const StudentNotifications = () => {
 
   useEffect(() => {
     const fetchNotices = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Authentication token not found.");
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get("/api/notices", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-        const response = await axios.get("/api/notices", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    console.log("Notices API response:", response.data);
 
-        console.log("Full notices API Response:", response);
-        console.log("Response data:", response.data);
-        console.log("Response status:", response.status);
-        console.log("Response data type:", typeof response.data);
+    let data = [];
 
-        // Check if response.data is an array directly
-        if (Array.isArray(response.data)) {
-          console.log("Data is array, processing...");
-          const sortedNotices = response.data.sort(
-            (a, b) =>
-              new Date(b.createdAt || b.date || b.timestamp) -
-              new Date(a.createdAt || a.date || a.timestamp)
-          );
-          console.log("Sorted notices:", sortedNotices);
-          setNotices(sortedNotices);
-        }
-        // Check if response.data.data exists
-        else if (response.data.data && Array.isArray(response.data.data)) {
-          console.log("Data is nested in data property, processing...");
-          const sortedNotices = response.data.data.sort(
-            (a, b) =>
-              new Date(b.createdAt || b.date || b.timestamp) -
-              new Date(a.createdAt || a.date || a.timestamp)
-          );
-          console.log("Sorted notices:", sortedNotices);
-          setNotices(sortedNotices);
-        }
-        // Check if response.data.notices exists
-        else if (
-          response.data.notices &&
-          Array.isArray(response.data.notices)
-        ) {
-          console.log("Data is nested in notices property, processing...");
-          const sortedNotices = response.data.notices.sort(
-            (a, b) =>
-              new Date(b.createdAt || b.date || b.timestamp) -
-              new Date(a.createdAt || a.date || a.timestamp)
-          );
-          console.log("Sorted notices:", sortedNotices);
-          setNotices(sortedNotices);
-        } else {
-          console.log("Unexpected response format:", response.data);
-          throw new Error("Invalid response format");
-        }
-      } catch (err) {
-        console.error("Error fetching notices:", err);
-        console.error("Error details:", err.response?.data);
-        setError("Failed to load notices. Please try again later.");
+    if (Array.isArray(response.data)) {
+      data = response.data;
+    } else if (Array.isArray(response.data.data)) {
+      data = response.data.data;
+    } else if (Array.isArray(response.data.notices)) {
+      data = response.data.notices;
+    } else {
+      throw new Error("Unexpected API response format.");
+    }
 
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-
+    const sorted = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+    setNotices(sorted);
+  } catch (err) {
+    console.error("Error fetching notices:", err);
+    setError("Failed to load notices.");
+  } finally {
+    setLoading(false);
+  }
+};
     fetchNotices();
   }, []);
 
-  // Helper function to get notice icon based on type or content
-  const getNoticeIcon = (notice, index) => {
-    const content =
-      notice.content?.toLowerCase() || notice.text?.toLowerCase() || "";
-    const title = notice.title?.toLowerCase() || "";
-
-    if (
-      title.includes("menu") ||
-      content.includes("menu") ||
-      content.includes("food")
-    ) {
-      return "🍽️";
-    } else if (
-      title.includes("expense") ||
-      content.includes("expense") ||
-      content.includes("payment")
-    ) {
-      return "💰";
-    } else if (
-      title.includes("announcement") ||
-      content.includes("announcement")
-    ) {
-      return "📢";
-    } else if (
-      title.includes("maintenance") ||
-      content.includes("maintenance")
-    ) {
-      return "🔧";
-    } else if (title.includes("holiday") || content.includes("holiday")) {
-      return "🎉";
-    } else {
-      // Default icons based on index
-      return index % 3 === 0 ? "📢" : index % 3 === 1 ? "💰" : "🍽️";
-    }
-  };
-
-  // Helper function to get notice color based on type
-  const getNoticeColor = (notice, index) => {
-    const content =
-      notice.content?.toLowerCase() || notice.text?.toLowerCase() || "";
-    const title = notice.title?.toLowerCase() || "";
-
-    if (
-      title.includes("menu") ||
-      content.includes("menu") ||
-      content.includes("food")
-    ) {
-      return "bg-yellow-100";
-    } else if (
-      title.includes("expense") ||
-      content.includes("expense") ||
-      content.includes("payment")
-    ) {
-      return "bg-green-100";
-    } else if (
-      title.includes("announcement") ||
-      content.includes("announcement")
-    ) {
-      return "bg-blue-100";
-    } else if (
-      title.includes("maintenance") ||
-      content.includes("maintenance")
-    ) {
-      return "bg-red-100";
-    } else if (title.includes("holiday") || content.includes("holiday")) {
-      return "bg-purple-100";
-    } else {
-      // Default colors based on index
-      return index % 3 === 0
-        ? "bg-blue-100"
-        : index % 3 === 1
-        ? "bg-green-100"
-        : "bg-yellow-100";
-    }
-  };
-
-  // Helper function to format relative time
-  const getRelativeTime = (dateString) => {
-    const now = new Date();
-    const noticeDate = new Date(dateString);
-    const diffInMs = now - noticeDate;
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-      return diffInMinutes < 1
-        ? "Just now"
-        : `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
-    } else if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
-    } else {
-      return noticeDate.toLocaleDateString();
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">🔔 Notices</h1>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && notices.length === 0) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">� Notices</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">🔔 Notices</h1>
-        <div className="text-sm text-gray-500">
-          {notices.length} notice{notices.length !== 1 ? "s" : ""}
-        </div>
-      </div>
+      <h1 className="text-3xl font-bold text-gray-800 mb-4">🔔 Notices</h1>
 
-      {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-600 text-sm">
-            ⚠️ {error} Showing cached notices below.
-          </p>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {notices.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-gray-400 text-6xl mb-4">📭</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No notices yet
-            </h3>
-            <p className="text-gray-500">
-              Check back later for updates and announcements.
-            </p>
-          </div>
-        ) : (
-          notices.map((notice, index) => (
+      {loading ? (
+        <div className="text-center">Loading...</div>
+      ) : error ? (
+        <p className="text-red-600">{error}</p>
+      ) : notices.length === 0 ? (
+        <p className="text-gray-500">No notices available.</p>
+      ) : (
+        <div className="space-y-4">
+          {notices.map((notice, index) => (
             <div
-              key={notice._id || notice.id || index}
-              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+              key={notice._id || index}
+              className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3">
-                  <div
-                    className={`p-2 rounded-full ${getNoticeColor(
-                      notice,
-                      index
-                    )}`}
-                  >
-                    <span className="text-sm">
-                      {getNoticeIcon(notice, index)}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    {/* <h3 className="font-semibold text-gray-800">
-                      {notice.title || notice.subject || "Notice"}
-                    </h3> */}
-                    <p className="text-black-1000 mt-1 leading-relaxed">
-                      {notice.content ||
-                        notice.text ||
-                        notice.description ||
-                        notice.message ||
-                        "No content available"}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {getRelativeTime(
-                        notice.createdAt ||
-                          notice.date ||
-                          notice.timestamp ||
-                          new Date()
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-                  onClick={() => {
-                    console.log("Dismiss notice:", notice._id || notice.id);
-                  }}
-                >
-                  ×
-                </button>
-              </div>
+              <p className="text-gray-800">{notice.text}</p>
+              <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
             </div>
-          ))
-        )}
-      </div>
-
-      {notices.length > 0 && (
-        <div className="text-center">
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Refresh Notices
-          </button>
+          ))}
         </div>
       )}
     </div>
