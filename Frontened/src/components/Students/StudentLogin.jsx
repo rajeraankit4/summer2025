@@ -26,6 +26,11 @@ const StudentLogin = () => {
 
       // Save token in localStorage or context
       localStorage.setItem("token", token);
+
+      if (user?.studentDetails?.studentid) {
+      localStorage.setItem("studentid", user.studentDetails.studentid);
+    }
+    
       login(user); // context login
 
       setSuccessMessage("Logged in successfully!");

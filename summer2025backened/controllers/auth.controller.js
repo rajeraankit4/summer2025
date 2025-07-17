@@ -89,7 +89,8 @@ export const login = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email, role });
+    const user = await User.findOne({ email, role }).populate("studentDetails");
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -110,15 +111,17 @@ export const login = async (req, res) => {
     );
 
     res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role
-      }
-    });
+  success: true,
+  message: "Login successful",
+  token,
+  user: {
+    id: user._id,
+    email: user.email,
+    role: user.role,
+    studentDetails: user.studentDetails, // ✅ include full populated student data
+  },
+});
+
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Login failed", details: err.message });
