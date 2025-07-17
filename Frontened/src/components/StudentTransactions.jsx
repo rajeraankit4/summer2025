@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Search, Download, Filter, Eye, Calendar, DollarSign } from "lucide-react";
+import {
+  Search,
+  Download,
+  Filter,
+  Eye,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
 import axios from "../api/axiosConfig";
 
 const StudentTransactions = () => {
@@ -23,9 +30,34 @@ const StudentTransactions = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
+      // First, test basic connectivity
+      try {
+        console.log("🧪 Testing server connectivity...");
+        const serverTestResponse = await axios.get("/server-test");
+        console.log("✅ Server test response:", serverTestResponse.data);
+
+        console.log("🧪 Testing mess staff route connectivity...");
+        const testResponse = await axios.get("/mess-staff/test");
+        console.log("✅ Test route response:", testResponse.data);
+
+        // Test transactions route without auth
+        const transactionsTestResponse = await axios.get(
+          "/mess-staff/transactions-test"
+        );
+        console.log(
+          "✅ Transactions test route response:",
+          transactionsTestResponse.data
+        );
+      } catch (testErr) {
+        console.log("❌ Test route failed:", testErr.response?.status);
+        console.log("❌ Test route error:", testErr.message);
+        console.log("❌ Full test error:", testErr);
+      }
+
       // Fetch mess transactions
-      const messResponse = await axios.get("/api/mess-staff/transactions", {
+      console.log("- Requesting URL:", "/mess-staff/transactions");
+      const messResponse = await axios.get("/mess-staff/transactions", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,8 +66,11 @@ const StudentTransactions = () => {
       let allTransactions = [];
 
       // Process mess transactions
-      if (messResponse.data.status === 1 && Array.isArray(messResponse.data.data)) {
-        const messTransactions = messResponse.data.data.map(transaction => ({
+      if (
+        messResponse.data.status === 1 &&
+        Array.isArray(messResponse.data.data)
+      ) {
+        const messTransactions = messResponse.data.data.map((transaction) => ({
           ...transaction,
           type: "mess",
           typeName: "Mess",
@@ -45,12 +80,12 @@ const StudentTransactions = () => {
       }
 
       // TODO: Fetch canteen transactions when available
-      // const canteenResponse = await axios.get("/api/canteen-staff/transactions", {
+      // const canteenResponse = await axios.get("/canteen-staff/transactions", {
       //   headers: {
       //     Authorization: `Bearer ${token}`,
       //   },
       // });
-      // 
+      //
       // if (canteenResponse.data && Array.isArray(canteenResponse.data)) {
       //   const canteenTransactions = canteenResponse.data.map(transaction => ({
       //     ...transaction,
@@ -63,11 +98,27 @@ const StudentTransactions = () => {
 
       // Sort by date (newest first)
       allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
+
       setTransactions(allTransactions);
     } catch (err) {
       console.error("Failed to fetch transactions:", err);
-      setError("Failed to load transactions. Please try again later.");
+
+      // Enhanced error messages
+      if (err.response?.status === 401) {
+        setError("Authentication failed. Please log in again.");
+      } else if (err.response?.status === 403) {
+        setError(
+          "You don't have permission to view transactions. Please contact admin."
+        );
+      } else if (err.response?.status === 404) {
+        setError("Transactions endpoint not found. Please contact support.");
+      } else if (err.code === "ECONNREFUSED" || !err.response) {
+        setError(
+          "Cannot connect to server. Please make sure the backend is running on port 5000."
+        );
+      } else {
+        setError("Failed to load transactions. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -80,25 +131,31 @@ const StudentTransactions = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (transaction) =>
-          transaction.studentid?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          transaction.studentid
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           transaction.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          transaction.description
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
     // Type filter
     if (filterType !== "all") {
-      filtered = filtered.filter((transaction) => transaction.type === filterType);
+      filtered = filtered.filter(
+        (transaction) => transaction.type === filterType
+      );
     }
 
     // Date filter
     if (dateFilter !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
+
       filtered = filtered.filter((transaction) => {
         const transactionDate = new Date(transaction.date);
-        
+
         switch (dateFilter) {
           case "today":
             return transactionDate >= today;
@@ -120,28 +177,43 @@ const StudentTransactions = () => {
   };
 
   const getTotalAmount = () => {
-    return filteredTransactions.reduce((sum, transaction) => sum + (transaction.amount || 0), 0);
+    return filteredTransactions.reduce(
+      (sum, transaction) => sum + (transaction.amount || 0),
+      0
+    );
   };
 
   const downloadCSV = () => {
-    const headers = ["Date", "Student ID", "Email", "Type", "Description", "Amount"];
+    const headers = [
+      "Date",
+      "Student ID",
+      "Email",
+      "Type",
+      "Description",
+      "Amount",
+    ];
     const csvContent = [
       headers.join(","),
-      ...filteredTransactions.map(transaction => [
-        new Date(transaction.date).toLocaleDateString(),
-        transaction.studentid || "N/A",
-        transaction.email || "N/A",
-        transaction.typeName || "N/A",
-        `"${transaction.description || "N/A"}"`,
-        transaction.amount || 0
-      ].join(","))
+      ...filteredTransactions.map((transaction) =>
+        [
+          new Date(transaction.date).toLocaleDateString(),
+          transaction.studentid || "N/A",
+          transaction.email || "N/A",
+          transaction.typeName || "N/A",
+          `"${transaction.description || "N/A"}"`,
+          transaction.amount || 0,
+        ].join(",")
+      ),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `student_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute(
+      "download",
+      `student_transactions_${new Date().toISOString().split("T")[0]}.csv`
+    );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -151,7 +223,9 @@ const StudentTransactions = () => {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Student Transactions</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Student Transactions
+        </h1>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -162,7 +236,9 @@ const StudentTransactions = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Student Transactions</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Student Transactions
+        </h1>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <p className="text-red-600">{error}</p>
           <button
@@ -185,8 +261,12 @@ const StudentTransactions = () => {
             <DollarSign className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Student Transactions</h1>
-            <p className="text-gray-600">Monitor all student transactions across mess and canteen</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Student Transactions
+            </h1>
+            <p className="text-gray-600">
+              Monitor all student transactions across mess and canteen
+            </p>
           </div>
         </div>
         <button
@@ -203,18 +283,24 @@ const StudentTransactions = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Transactions</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Total Transactions
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {filteredTransactions.length}
+              </p>
             </div>
             <Eye className="w-8 h-8 text-blue-500" />
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Amount</p>
-              <p className="text-2xl font-bold text-green-600">₹{getTotalAmount().toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-600">
+                ₹{getTotalAmount().toLocaleString()}
+              </p>
             </div>
             <DollarSign className="w-8 h-8 text-green-500" />
           </div>
@@ -223,9 +309,11 @@ const StudentTransactions = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Mess Transactions</p>
+              <p className="text-sm font-medium text-gray-600">
+                Mess Transactions
+              </p>
               <p className="text-2xl font-bold text-orange-600">
-                {filteredTransactions.filter(t => t.type === "mess").length}
+                {filteredTransactions.filter((t) => t.type === "mess").length}
               </p>
             </div>
             <div className="text-2xl">🍽️</div>
@@ -235,9 +323,14 @@ const StudentTransactions = () => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Canteen Transactions</p>
+              <p className="text-sm font-medium text-gray-600">
+                Canteen Transactions
+              </p>
               <p className="text-2xl font-bold text-purple-600">
-                {filteredTransactions.filter(t => t.type === "canteen").length}
+                {
+                  filteredTransactions.filter((t) => t.type === "canteen")
+                    .length
+                }
               </p>
             </div>
             <div className="text-2xl">☕</div>
@@ -301,7 +394,8 @@ const StudentTransactions = () => {
         {searchTerm || filterType !== "all" || dateFilter !== "all" ? (
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Showing {filteredTransactions.length} of {transactions.length} transactions
+              Showing {filteredTransactions.length} of {transactions.length}{" "}
+              transactions
             </p>
             <button
               onClick={() => {
@@ -348,12 +442,12 @@ const StudentTransactions = () => {
                 filteredTransactions.map((transaction) => (
                   <tr key={transaction.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(transaction.date).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      {new Date(transaction.date).toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -363,12 +457,15 @@ const StudentTransactions = () => {
                       {transaction.email || "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        transaction.type === "mess" 
-                          ? "bg-orange-100 text-orange-800" 
-                          : "bg-purple-100 text-purple-800"
-                      }`}>
-                        {transaction.type === "mess" ? "🍽️" : "☕"} {transaction.typeName}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          transaction.type === "mess"
+                            ? "bg-orange-100 text-orange-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {transaction.type === "mess" ? "🍽️" : "☕"}{" "}
+                        {transaction.typeName}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -381,7 +478,10 @@ const StudentTransactions = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     {searchTerm || filterType !== "all" || dateFilter !== "all"
                       ? "No transactions found matching your criteria"
                       : "No transactions found"}
