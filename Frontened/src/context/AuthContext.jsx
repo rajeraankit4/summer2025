@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+// Create context
 const AuthContext = createContext();
 
+// Custom hook to use the Auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -10,25 +12,38 @@ export const useAuth = () => {
   return context;
 };
 
+// AuthProvider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem("user");
+      // Only parse if it's a valid JSON string and not "undefined"
+      if (savedUser && savedUser !== "undefined") {
+        return JSON.parse(savedUser);
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+    }
+    return null;
   });
 
+  // Login method
   const login = (userData) => {
+    if (!userData) return;
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
+  // Logout method
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
 
+  // Check if user is logged in
   const isLoggedIn = !!user;
 
+  // Values provided by the context
   const value = {
     user,
     login,
