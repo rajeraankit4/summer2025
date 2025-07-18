@@ -6,16 +6,27 @@ export default function MessManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [staffList, setStaffList] = useState([]);
   const [editedList, setEditedList] = useState([]);
-  const [newStaff, setNewStaff] = useState({ name: "", mobile: "", date: "" , email: ""});
+  const [newStaff, setNewStaff] = useState({ name: "", mobile: "", date: "", email: "" });
 
   useEffect(() => {
     const fetchStaff = async () => {
       try {
         const res = await axios.get('/mess-staff');
-        setStaffList(res.data);
-        setEditedList(res.data);
+        // FIX: Validate that the API response is an array
+        if (Array.isArray(res.data)) {
+          setStaffList(res.data);
+          setEditedList(res.data);
+        } else {
+          console.error('Failed to fetch mess staff: API response is not an array.', res.data);
+          // Set to empty arrays to prevent the app from crashing
+          setStaffList([]);
+          setEditedList([]);
+        }
       } catch (err) {
         console.error('Failed to fetch mess staff:', err);
+        // Also set to empty arrays on error
+        setStaffList([]);
+        setEditedList([]);
       }
     };
     fetchStaff();
@@ -23,8 +34,8 @@ export default function MessManagement() {
 
   const handleAddStaff = () => {
     if (!newStaff.name || !newStaff.mobile || !newStaff.date || !newStaff.email) return;
-    const updatedList = [...editedList, newStaff];
-    setEditedList(updatedList);
+    // No need for an intermediate variable, just update the state
+    setEditedList([...editedList, newStaff]);
     setNewStaff({ name: "", mobile: "", date: "", email: "" });
   };
 
@@ -35,30 +46,37 @@ export default function MessManagement() {
   };
 
   const handleSave = async () => {
-  try {
-    const sanitizedList = editedList.map((staff) => ({
-      ...staff,
-      date: new Date(staff.date),
-    }));
-    console.log("Sending this list to backend:", sanitizedList);
-   
-    const response = await axios.put('/mess-staff', sanitizedList);
+    try {
+      const sanitizedList = editedList.map((staff) => ({
+        ...staff,
+        // Ensure date is valid before creating a new Date object
+        date: staff.date ? new Date(staff.date) : null,
+      }));
 
+      const response = await axios.put('/mess-staff', sanitizedList);
 
+      // FIX: Validate that the API response from the PUT request is an array
+      if (Array.isArray(response.data)) {
+        setStaffList(response.data);
+        setEditedList(response.data);
+      } else {
+        console.error('Failed to update mess staff: API response is not an array.', response.data);
+        // Fallback to the list we intended to save to keep the UI consistent
+        setStaffList(editedList);
+      }
 
-    setStaffList(response.data);
-    setEditedList(response.data);
-    setIsEditing(false);
-  } catch (err) {
-console.error('Failed to update mess staff. Full error response:', err.response);  }
-};
-
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to update mess staff. Full error response:', err.response);
+    }
+  };
 
   const handleCancel = () => {
     setEditedList(staffList);
     setIsEditing(false);
     setNewStaff({ name: "", mobile: "", email: "", date: "" });
   };
+
   const handleDelete = (index) => {
     const updatedList = [...editedList];
     updatedList.splice(index, 1);
@@ -100,11 +118,11 @@ console.error('Failed to update mess staff. Full error response:', err.response)
         )}
       </div>
 
-      {/* Add new staff form */}
       {isEditing && (
         <div className="bg-white p-4 rounded shadow mb-4">
           <h3 className="text-lg font-semibold mb-2">+ Authorize New Staff</h3>
-          <div className="grid grid-cols-3 gap-2">
+          {/* FIX: Corrected grid columns from 3 to 4 to match inputs */}
+          <div className="grid grid-cols-4 gap-2">
             <input
               type="text"
               placeholder="Name"
@@ -121,7 +139,6 @@ console.error('Failed to update mess staff. Full error response:', err.response)
             />
             <input
               type="date"
-              placeholder="Date"
               value={newStaff.date}
               onChange={(e) => setNewStaff({ ...newStaff, date: e.target.value })}
               className="border px-2 py-1"
@@ -143,7 +160,6 @@ console.error('Failed to update mess staff. Full error response:', err.response)
         </div>
       )}
 
-      {/* Table */}
       <table className="w-full text-center border border-black">
         <thead className="bg-white">
           <tr>
@@ -155,7 +171,7 @@ console.error('Failed to update mess staff. Full error response:', err.response)
         </thead>
         <tbody className="bg-white">
           {(isEditing ? editedList : staffList).map((staff, index) => (
-            <tr key={index}>
+            <tr key={staff.id || index}> {/* FIX: Use a unique ID if available */}
               <td className="border border-black font-bold py-2 px-4">
                 {isEditing ? (
                   <input
@@ -184,36 +200,36 @@ console.error('Failed to update mess staff. Full error response:', err.response)
                 {isEditing ? (
                   <input
                     type="date"
-                    value={staff.date?.slice(0, 10)}
+                    value={staff.date ? String(staff.date).slice(0, 10) : ''}
                     onChange={(e) => handleChange(index, 'date', e.target.value)}
                     className="border px-2 py-1 w-full"
                   />
                 ) : (
-                  new Date(staff.date).toLocaleDateString()
+                  // FIX: Check if date is valid before formatting
+                  staff.date ? new Date(staff.date).toLocaleDateString() : 'N/A'
                 )}
               </td>
               <td className="border border-black font-bold py-2 px-4 relative">
-  {isEditing ? (
-    <div className="flex items-center gap-2">
-      <input
-        type="email"
-        value={staff.email}
-        onChange={(e) => handleChange(index, 'email', e.target.value)}
-        className="border px-2 py-1 w-full"
-      />
-      <button
-        onClick={() => handleDelete(index)}
-        className="text-red-600 text-xl font-bold hover:text-red-800"
-        title="Delete"
-      >
-        ✕
-      </button>
-    </div>
-  ) : (
-    staff.email
-  )}
-</td>
-
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      value={staff.email}
+                      onChange={(e) => handleChange(index, 'email', e.target.value)}
+                      className="border px-2 py-1 w-full"
+                    />
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-600 text-xl font-bold hover:text-red-800"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  staff.email
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -221,4 +237,3 @@ console.error('Failed to update mess staff. Full error response:', err.response)
     </div>
   );
 }
-

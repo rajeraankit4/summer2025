@@ -12,10 +12,21 @@ const CanteenManagement = () => {
     const fetchStaff = async () => {
       try {
         const res = await axios.get('/canteen-staff');
-        setStaffList(res.data);
-        setEditedList(res.data);
+        // FIX: Ensure the response data is an array before setting state
+        if (Array.isArray(res.data)) {
+          setStaffList(res.data);
+          setEditedList(res.data);
+        } else {
+          // If data is not an array, set state to empty array to prevent crash
+          console.error('API response is not an array:', res.data);
+          setStaffList([]);
+          setEditedList([]);
+        }
       } catch (err) {
         console.error('Failed to fetch canteen staff:', err);
+        // Also set to empty arrays on error to be safe
+        setStaffList([]);
+        setEditedList([]);
       }
     };
     fetchStaff();
@@ -46,8 +57,15 @@ const CanteenManagement = () => {
         date: new Date(staff.date),
       }));
       const res = await axios.put('/canteen-staff', sanitizedList);
-      setStaffList(res.data);
-      setEditedList(res.data);
+      // FIX: Ensure the response data is an array before setting state
+      if (Array.isArray(res.data)) {
+        setStaffList(res.data);
+        setEditedList(res.data);
+      } else {
+        console.error('API response from PUT is not an array:', res.data);
+        // Fallback to the list we tried to save to maintain UI consistency
+        setStaffList(editedList);
+      }
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update canteen staff:', err);
@@ -178,27 +196,26 @@ const CanteenManagement = () => {
                 )}
               </td>
               <td className="border border-black font-bold py-2 px-4 relative">
-  {isEditing ? (
-    <div className="flex items-center gap-2">
-      <input
-        type="email"
-        value={staff.email}
-        onChange={(e) => handleChange(index, 'email', e.target.value)}
-        className="border px-2 py-1 w-full"
-      />
-      <button
-        onClick={() => handleDelete(index)}
-        className="text-red-600 text-xl font-bold hover:text-red-800"
-        title="Delete"
-      >
-        ✕
-      </button>
-    </div>
-  ) : (
-    staff.email
-  )}
-</td>
-
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      value={staff.email}
+                      onChange={(e) => handleChange(index, 'email', e.target.value)}
+                      className="border px-2 py-1 w-full"
+                    />
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-600 text-xl font-bold hover:text-red-800"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  staff.email
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
