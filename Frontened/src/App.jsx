@@ -6,13 +6,11 @@ import AdminRoutes from "./Components/Pages/Adminroutesdef/Adminroutes";
 import StudentRoutes from "./Components/Pages/Studentroutesdef/StudentRoutes";
 import LoginHub from "./Components/LoginHub";
 import AdminLogin from "./Components/AdminLogin";
-import AdminLoginForm from "./components/AdminLoginForm";
+import AdminLoginForm from "./Components/AdminLoginForm";
 import LoginPage from "./LoginPage";
 import SignupFlow from "./Components/Students/SignupFlow";
 import StudentLogin from "./Components/Students/StudentLogin";
 import StudentSignup from "./Components/Students/StudentSignup";
-import PasswordVerifyPage from "./components/PasswordVerifyPage";
- import CanteenAdminPasswordVerifyPage from "./components/CanteenAdminPasswordVerifyPage";
 
 const AppRoutes = () => {
   const { user, isLoggedIn } = useAuth();
@@ -27,8 +25,6 @@ const AppRoutes = () => {
       <Route path="/student-login" element={<StudentLogin />} />
       <Route path="/signup" element={<LoginPage mode="signup" />} />
       <Route path="/student-signup" element={<StudentSignup />} />
-      <Route path="/admin/password-verify" element={<PasswordVerifyPage />} />
-      <Route path="/canteen-admin/password-verify" element={<CanteenAdminPasswordVerifyPage />} />
       <Route
         path="/student/*"
         element={
