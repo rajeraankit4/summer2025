@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { UserCircle, ChevronDown } from "lucide-react";
+import { UserCircle, ChevronDown, DollarSign } from "lucide-react"
 import { useAuth } from "../../context/AuthContext";
 import {
   Users,
@@ -33,6 +33,11 @@ const navItems = [
     name: "Canteen Management",
     path: "/admin/canteen",
     icon: <ScrollText size={18} />,
+  },
+  {
+    name: "Student Transactions",
+    path: "/admin/student-transactions",
+    icon: <DollarSign className="w-5 h-5" />,
   },
   {
     name: "Billing & Payments",

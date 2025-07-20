@@ -79,18 +79,16 @@ export const getMessTransactionsByRole = async (req, res) => {
       });
     }
 
-
-    console.log("Raw DB result:", transactions);
-
     const formatted = transactions.map(
-      ({ studentid, amount, description, date }) => ({
+      ({ _id, studentid, email, amount, description, date }) => ({
+        _id,
         studentid,
+        email,
         amount,
         description,
         date,
       })
     );
-
 
     console.log("Formatted transactions:", formatted);
 
