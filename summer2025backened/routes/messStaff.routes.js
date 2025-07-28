@@ -2,6 +2,8 @@ import express from "express";
 import {
   getMessStaff,
   updateMessStaff,
+  addMessStaff,
+  deleteMessStaff,
   transactionStats,
 } from "../controllers/messStaff.controller.js";
 import {
@@ -28,7 +30,9 @@ router.get("/transactions-test", (req, res) => {
 });
 
 router.get("/", getMessStaff);
-router.put("/", updateMessStaff);
+router.post("/", addMessStaff);
+router.delete("/:id", deleteMessStaff);
+router.put("/:id", updateMessStaff);
 router.get("/stats", transactionStats);
 
 router.post(
