@@ -30,10 +30,10 @@ export const createExpense = async (req, res) => {
 
     // Create expense using email from personal details (no user link required)
     const expense = new messexpenses({
-      email: studentDetail.email, // Use email directly from personal details
+      email: studentDetail.email,
       studentid,
       amount,
-      description: finalDescription, // Use the validated description
+      description: finalDescription,
     });
 
     await expense.save();
@@ -44,7 +44,7 @@ export const createExpense = async (req, res) => {
       data: {
         studentid: expense.studentid,
         amount: expense.amount,
-        description: expense.description, // This will be the finalDescription
+        description: expense.description,
         date: expense.date,
         studentName: `${studentDetail.firstname} ${studentDetail.lastname}`,
         email: expense.email,
@@ -54,7 +54,36 @@ export const createExpense = async (req, res) => {
     console.error("Error adding mess expense:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
+}; // <-- ✅ Closing createExpense
+
+// ✅ Get Recent Expenses (for frontend table)
+export const getRecentExpenses = async (req, res) => {
+  try {
+    const transactions = await messexpenses.find().sort({ date: -1 }).limit(50);
+    const formatted = transactions.map(
+      ({ _id, studentid, email, amount, description, date }) => ({
+        _id,
+        studentid,
+        email,
+        amount,
+        description,
+        date,
+      })
+    );
+    res.status(200).json({
+      status: 1,
+      message: "Recent expenses fetched successfully",
+      data: formatted,
+    });
+  } catch (error) {
+    console.error("Error fetching recent expenses:", error);
+    res.status(500).json({
+      status: 0,
+      message: "Failed to fetch recent expenses",
+      error: error.message,
+    });
+  }
+}; // <-- ✅ Closing getRecentExpenses
 
 // ✅ Get All Transactions Based on Role
 export const getMessTransactionsByRole = async (req, res) => {
@@ -105,4 +134,4 @@ export const getMessTransactionsByRole = async (req, res) => {
       error: error.message,
     });
   }
-};
+}; // <-- ✅ Closing getMessTransactionsByRole
