@@ -2,17 +2,15 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import LandingPage from "./Components/Pages/LandingPage/LandingPage";
 import NotFound from "./Components/NotFound";
-import AdminRoutes from "./components/Pages/Adminroutesdef/Adminroutes";
+import AdminRoutes from "./Components/Pages/Adminroutesdef/Adminroutes";
 import StudentRoutes from "./Components/Pages/Studentroutesdef/StudentRoutes";
 import LoginHub from "./Components/LoginHub";
 import AdminLogin from "./Components/AdminLogin";
-import AdminLoginForm from "./components/AdminLoginForm";
+import AdminLoginForm from "./Components/AdminLoginForm";
 import LoginPage from "./LoginPage";
 import SignupFlow from "./Components/Students/SignupFlow";
 import StudentLogin from "./Components/Students/StudentLogin";
 import StudentSignup from "./Components/Students/StudentSignup";
-import MessAdminRoutes from "./components/Pages/Admin/MessAdminRoutes";
-
 
 const AppRoutes = () => {
   const { user, isLoggedIn } = useAuth();
@@ -27,8 +25,6 @@ const AppRoutes = () => {
       <Route path="/student-login" element={<StudentLogin />} />
       <Route path="/signup" element={<LoginPage mode="signup" />} />
       <Route path="/student-signup" element={<StudentSignup />} />
-      <Route path="/mess-admin/*" element={<MessAdminRoutes />} />
-
       <Route
         path="/student/*"
         element={
@@ -40,7 +36,6 @@ const AppRoutes = () => {
         }
       />
       <Route
-     
         path="/admin/*"
         element={
           isLoggedIn &&
