@@ -1,27 +1,23 @@
-// src/AdminLayouts/MessAdminLayout.jsx - CORRECTED
-
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { UserCircle, ChevronDown, Utensils, Settings, DollarSign } from "lucide-react";
+import { UserCircle, ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { Utensils, Settings, DollarSign } from "lucide-react";
 
-// ✅ --- CORRECTION IS HERE ---
-// The paths must match the routes defined in MessAdminRoutes.jsx,
-// which are nested under "/mess-admin".
 const navItems = [
   {
     name: "Menu Management",
-    path: "/mess-admin/menu", // Changed from /admin/menu
+    path: "/admin/menu",
     icon: <Utensils size={18} />,
   },
   {
     name: "Student Expenses",
-    path: "/mess-admin/expenses", // Changed from /admin/expenses
+    path: "/admin/expenses",
     icon: <DollarSign size={18} />,
   },
   {
     name: "Settings",
-    path: "/mess-admin/settings", // Changed from /admin/settings
+    path: "/admin/settings",
     icon: <Settings size={18} />,
   },
 ];
@@ -48,7 +44,6 @@ export default function MessAdminLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // The rest of your JSX is perfectly fine and requires no changes.
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Sidebar */}
@@ -82,8 +77,7 @@ export default function MessAdminLayout() {
       <div className="flex flex-col flex-1">
         {/* Header */}
         <header className="bg-white shadow px-6 py-4 flex justify-between items-center border-b-2 border-green-200">
-            {/* Header content... */}
-             <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <img src="/PU_Logo.png" alt="PU Logo" className="h-16 w-auto" />
             <div>
               <h1 className="text-3xl font-semibold text-gray-800">
@@ -94,7 +88,9 @@ export default function MessAdminLayout() {
               </p>
             </div>
           </div>
-           <div className="relative" ref={dropdownRef}>
+
+          {/* Profile Dropdown */}
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setOpen((prev) => !prev)}
               className="flex items-center gap-2 text-gray-700 hover:text-gray-900 focus:outline-none"
@@ -102,17 +98,28 @@ export default function MessAdminLayout() {
               <UserCircle className="w-8 h-8" />
               <ChevronDown className="w-4 h-4" />
             </button>
-            {/* Dropdown Menu... */}
+
             {open && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                <ul className="py-1">
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border">
+                <ul className="py-1 text-sm text-gray-700">
+                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <NavLink
+                      to="/admin/settings"
+                      className="flex items-center space-x-2"
+                      onClick={() => setOpen(false)}
                     >
-                      Logout
-                    </button>
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </NavLink>
+                  </li>
+                  <hr className="my-1" />
+                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-600">
+                    <div
+                      className="flex items-center space-x-2"
+                      onClick={handleLogout}
+                    >
+                      <span>Logout</span>
+                    </div>
                   </li>
                 </ul>
               </div>
@@ -122,7 +129,6 @@ export default function MessAdminLayout() {
 
         {/* Page Content */}
         <main className="flex-1 p-8 overflow-auto">
-          {/* The Outlet is correctly placed here! */}
           <Outlet />
         </main>
 
