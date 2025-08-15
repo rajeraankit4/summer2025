@@ -1,13 +1,18 @@
 // frontend/src/components/MessManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { Pencil, Trash2, Save, XCircle } from 'lucide-react';
-import axios from '../api/axiosConfig';
+import { Pencil, Trash2, Save, XCircle, Loader2 } from 'lucide-react';
+import axios from '../api/axiosConfig'; // Assuming you have a pre-configured axios instance
 
 export default function MessManagement() {
   const [staffList, setStaffList] = useState([]);
   const [newStaff, setNewStaff] = useState({ name: '', mobile: '', email: '' });
   const [editingId, setEditingId] = useState(null);
   const [editedData, setEditedData] = useState({});
+
+  // --- State for UI Feedback ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchStaff();
@@ -19,6 +24,7 @@ export default function MessManagement() {
       setStaffList(res.data);
     } catch (err) {
       console.error('Failed to fetch mess staff:', err);
+      setError('Could not load staff list. Please refresh the page.');
     }
   };
 
@@ -28,20 +34,26 @@ export default function MessManagement() {
 
   const handleAddMember = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
     try {
-      const res = await axios.post('/mess-staff', newStaff);
+      const res = await axios.post('/mess-staff/', newStaff);
       setStaffList([...staffList, res.data]);
-    
-      setNewStaff({ name: '', mobile: '', email: '' });
+      setSuccess(`Staff member "${newStaff.name}" added successfully! Password sent to email.`);
+      setNewStaff({ name: '', mobile: '', email: '' }); // Clear the form
     } catch (err) {
       console.error('Failed to add mess staff:', err);
-      alert(err.response?.data?.error || 'Failed to add member. Please check the console.');
+      const errorMessage = err.response?.data?.error || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEditClick = (staff) => {
     setEditingId(staff._id);
-  
     setEditedData({ name: staff.name, mobile: staff.mobile, email: staff.email });
   };
 
@@ -56,6 +68,7 @@ export default function MessManagement() {
       setEditingId(null);
     } catch (err) {
       console.error('Failed to update mess staff:', err);
+      setError('Failed to save changes. Please try again.');
     }
   };
 
@@ -70,6 +83,7 @@ export default function MessManagement() {
         setStaffList(staffList.filter(staff => staff._id !== id));
       } catch (err) {
         console.error('Failed to delete mess staff:', err);
+        setError('Failed to delete staff member.');
       }
     }
   };
@@ -80,7 +94,21 @@ export default function MessManagement() {
 
       <div className="bg-white p-4 rounded-lg mb-6 shadow">
         <h2 className="text-xl font-bold mb-3">Add New Mess Staff</h2>
-       
+
+        {/* --- UI Feedback Messages --- */}
+        {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong className="font-bold">Error: </strong>
+                <span className="block sm:inline">{error}</span>
+            </div>
+        )}
+        {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong className="font-bold">Success! </strong>
+                <span className="block sm:inline">{success}</span>
+            </div>
+        )}
+
         <form onSubmit={handleAddMember} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <input
             type="text" name="name" value={newStaff.name} onChange={handleNewStaffChange}
@@ -94,8 +122,13 @@ export default function MessManagement() {
             type="email" name="email" value={newStaff.email} onChange={handleNewStaffChange}
             placeholder="Email" className="border px-3 py-2 rounded w-full" required
           />
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full md:w-auto">
-            Add Member
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full md:w-auto flex items-center justify-center disabled:bg-blue-300"
+            disabled={isLoading}
+          >
+            {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+            {isLoading ? 'Adding...' : 'Add Member'}
           </button>
         </form>
       </div>
@@ -109,7 +142,6 @@ export default function MessManagement() {
             <tr>
               <th className="border border-black py-2 px-4">Name</th>
               <th className="border border-black py-2 px-4">Mobile No</th>
-           
               <th className="border border-black py-2 px-4">Email</th>
               <th className="border border-black py-2 px-4">Date of Authorization</th>
               <th className="border border-black py-2 px-4">Actions</th>
@@ -122,7 +154,6 @@ export default function MessManagement() {
                   <>
                     <td className="border border-black p-2"><input type="text" name="name" value={editedData.name} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
                     <td className="border border-black p-2"><input type="text" name="mobile" value={editedData.mobile} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
-               
                     <td className="border border-black p-2"><input type="email" name="email" value={editedData.email} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
                     <td className="border border-black p-2 font-mono text-sm">{new Date(staff.dateOfAuthorization).toLocaleDateString()}</td>
                     <td className="border border-black p-2">
@@ -136,9 +167,7 @@ export default function MessManagement() {
                   <>
                     <td className="border border-black font-semibold py-2 px-4">{staff.name}</td>
                     <td className="border border-black py-2 px-4">{staff.mobile}</td>
-                  
                     <td className="border border-black py-2 px-4">{staff.email}</td>
-                  
                     <td className="border border-black py-2 px-4 font-mono text-sm">{new Date(staff.dateOfAuthorization).toLocaleDateString()}</td>
                     <td className="border border-black py-2 px-4">
                       <div className="flex gap-4 justify-center">
