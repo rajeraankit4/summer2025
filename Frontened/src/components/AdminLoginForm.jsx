@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "../api/axiosConfig"; // ✅ Use custom axios
 
+
 const AdminLoginForm = () => {
   const [searchParams] = useSearchParams();
   const selectedRole = searchParams.get("role") || "superadmin";
@@ -26,27 +27,42 @@ const AdminLoginForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setSuccessMessage(null);
+  e.preventDefault();
+  setError(null);
+  setSuccessMessage(null);
 
-    try {
-      const res = await axios.post("auth/login", formData);
+  // Determine correct login URL
+  let loginUrl;
+  if (formData.role === "messadmin") {
+    loginUrl = "/mess-staff/auth/login";
+  } else {
+    loginUrl = "/auth/login";
+  }
 
-      const { token, user } = res.data;
+  try {
+    const res = await axios.post(loginUrl, formData);
+    const { token, user } = res.data;
 
-      localStorage.setItem("token", token);
-      login(user);
+    // Save user/token in context
+    login(user, token);
 
-      setSuccessMessage("Logged in successfully!");
-      setTimeout(() => {
+    setSuccessMessage("Logged in successfully!");
+
+    // Redirect based on role
+    setTimeout(() => {
+      if (formData.role === "messadmin") {
+        navigate("/mess-admin");
+      } else {
         navigate("/admin");
-      }, 1500);
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(err.response?.data?.error || "Login failed");
-    }
-  };
+      }
+    }, 1500);
+
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err.response?.data?.error || "Login failed");
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-8">
@@ -69,6 +85,7 @@ const AdminLoginForm = () => {
           </span>
         </div>
 
+        {/* --- MODIFIED SECTION START --- */}
         <input
           type="email"
           name="email"
@@ -77,6 +94,7 @@ const AdminLoginForm = () => {
           onChange={handleChange}
           required
           className="w-full px-5 py-4 rounded-xl border-2 border-orange-300"
+          autoComplete="email" // ✅ Added for browser autofill
         />
 
         <input
@@ -87,7 +105,9 @@ const AdminLoginForm = () => {
           onChange={handleChange}
           required
           className="w-full px-5 py-4 rounded-xl border-2 border-orange-300"
+          autoComplete="current-password" // ✅ Added for browser autofill
         />
+        {/* --- MODIFIED SECTION END --- */}
 
         {error && (
           <p className="text-red-600 text-center font-semibold">{error}</p>
