@@ -60,7 +60,7 @@ const StudentTransactions = () => {
 
       // Fetch mess transactions
   console.log("API GET:", "/api/expense/transactions");
-  const messResponse = await axios.get("/api/expense/transactions", {
+  const messResponse = await axios.get("/expense/transactions", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
