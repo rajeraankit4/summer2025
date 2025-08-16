@@ -34,16 +34,19 @@ const StudentTransactions = () => {
       // First, test basic connectivity
       try {
         console.log("🧪 Testing server connectivity...");
-        const serverTestResponse = await axios.get("/server-test");
+  console.log("API GET:", "/api/server-test");
+  const serverTestResponse = await axios.get("/api/server-test");
         console.log("✅ Server test response:", serverTestResponse.data);
 
         console.log("🧪 Testing mess staff route connectivity...");
-        const testResponse = await axios.get("/mess-staff/test");
+  console.log("API GET:", "/api/mess-staff/test");
+  const testResponse = await axios.get("/api/mess-staff/test");
         console.log("✅ Test route response:", testResponse.data);
 
         // Test transactions route without auth
+        console.log("API GET:", "/api/expense/transactions");
         const transactionsTestResponse = await axios.get(
-          "/expense/transactions"
+          "/api/expense/transactions"
         );
         console.log(
           "✅ Transactions test route response:",
@@ -56,8 +59,8 @@ const StudentTransactions = () => {
       }
 
       // Fetch mess transactions
-  console.log("- Requesting URL:", "/api/expense/transactions");
-  const messResponse = await axios.get("/expense/transactions", {
+  console.log("API GET:", "/api/expense/transactions");
+  const messResponse = await axios.get("/api/expense/transactions", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

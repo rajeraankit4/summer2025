@@ -166,34 +166,33 @@ const StudentExpenses = () => {
   }, []);
 
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Authentication token not found.");
+  const fetchExpenses = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Authentication token not found.");
+      if (!student?.studentid) return; // Wait for studentid
 
-        const response = await axios.get("/api/mess-staff/transactions", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log("Fetched expenses:", response);
-
-        if (response.data.status === 1 && Array.isArray(response.data.data)) {
-          setExpenses(response.data.data);
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (err) {
-        console.error("Error fetching expenses:", err);
-        setError("Failed to load expenses. Please try again later.");
-      } finally {
-        setLoading(false);
+      const apiUrl = `/api/expense/transactions/${student.studentid}`;
+      console.log("API GET:", apiUrl);
+      const response = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Student expenses API response:", response.data);
+      if (response.data.status === 1 && Array.isArray(response.data.data)) {
+        setExpenses(response.data.data);
+      } else {
+        throw new Error("Invalid response format");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching expenses:", err);
+      setError("Failed to load expenses. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchExpenses();
-  }, []);
+  if (student?.studentid) fetchExpenses();
+}, [student]);
 
   if (loading)
     return (

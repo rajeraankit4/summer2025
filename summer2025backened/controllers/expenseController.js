@@ -135,3 +135,30 @@ export const getMessTransactionsByRole = async (req, res) => {
     });
   }
 }; // <-- ✅ Closing getMessTransactionsByRole
+
+// ✅ Get Expenses for a Specific Student
+export const getStudentExpenses = async (req, res) => {
+  try {
+    const { studentid } = req.params;
+    if (!studentid) {
+      return res.status(400).json({ message: "Student ID is required" });
+    }
+    const transactions = await messexpenses.find({ studentid: studentid.toUpperCase() }).sort({ date: -1 });
+    const formatted = transactions.map(({ _id, studentid, email, amount, description, date }) => ({
+      _id,
+      studentid,
+      email,
+      amount,
+      description,
+      date,
+    }));
+    res.status(200).json({
+      status: 1,
+      message: "Student expenses fetched successfully",
+      data: formatted,
+    });
+  } catch (error) {
+    console.error("Error fetching student expenses:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
