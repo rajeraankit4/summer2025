@@ -8,7 +8,8 @@ import {
   DollarSign,
 } from "lucide-react";
 import axios from "../api/axiosConfig";
-
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 const StudentTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -186,42 +187,80 @@ const StudentTransactions = () => {
     );
   };
 
-  const downloadCSV = () => {
-    const headers = [
-      "Date",
-      "Student ID",
-      "Email",
-      "Type",
-      "Description",
-      "Amount",
-    ];
-    const csvContent = [
-      headers.join(","),
-      ...filteredTransactions.map((transaction) =>
-        [
-          new Date(transaction.date).toLocaleDateString(),
-          transaction.studentid || "N/A",
-          transaction.email || "N/A",
-          transaction.typeName || "N/A",
-          `"${transaction.description || "N/A"}"`,
-          transaction.amount || 0,
-        ].join(",")
-      ),
-    ].join("\n");
+const downloadPDF = () => {
+  // --- 1. Data Aggregation (No changes here) ---
+  const monthlyTotals = filteredTransactions.reduce((acc, transaction) => {
+    if (!transaction.studentid) {
+      return acc;
+    }
+    const date = new Date(transaction.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const key = `${transaction.studentid}_${monthKey}`;
+    if (!acc[key]) {
+      acc[key] = {
+        studentid: transaction.studentid,
+        typeName: transaction.typeName || "N/A",
+        amount: 0,
+        month: monthKey,
+      };
+    }
+    acc[key].amount += transaction.amount || 0;
+    return acc;
+  }, {});
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `student_transactions_${new Date().toISOString().split("T")[0]}.csv`
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const aggregatedData = Object.values(monthlyTotals);
+
+  // --- 2. PDF Generation ---
+  const doc = new jsPDF();
+  const tableColumn = ["Student ID", "Type", "Month", "Total Amount"];
+  
+  const tableRows = aggregatedData.map(data => [
+    data.studentid,
+    data.typeName,
+    data.month,
+    // **FIXED LINE**: Changed the Rupee symbol to "Rs." for proper rendering and alignment
+    `Rs. ${data.amount.toFixed(2)}`,
+  ]);
+
+  // Add a styled header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text("Monthly Student Transaction Totals", 14, 22);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, 14, 29);
+
+  // Use autoTable with styling options
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 35,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [41, 128, 185],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+    },
+    alternateRowStyles: {
+      fillColor: [245, 249, 252],
+    },
+    columnStyles: {
+      3: { halign: 'right' }, // This will now work correctly
+    },
+    didDrawPage: function (data) {
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(10);
+      doc.text(
+        'Page ' + data.pageNumber + ' of ' + pageCount,
+        data.settings.margin.left,
+        doc.internal.pageSize.height - 10
+      );
+    },
+  });
+
+  // --- 3. Save the PDF ---
+  doc.save(`monthly_student_totals_${new Date().toISOString().split("T")[0]}.pdf`);
+};
 
   if (loading) {
     return (
@@ -273,11 +312,11 @@ const StudentTransactions = () => {
           </div>
         </div>
         <button
-          onClick={downloadCSV}
+          onClick={downloadPDF}
           className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
         >
           <Download className="w-4 h-4" />
-          <span>Export CSV</span>
+          <span>Export PDF</span>
         </button>
       </div>
 
