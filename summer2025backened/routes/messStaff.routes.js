@@ -3,6 +3,9 @@ import {
   getMessStaff,
   updateMessStaff,
   transactionStats,
+  addMessStaff,
+  deleteMessStaff,
+  loginMessStaff
 } from "../controllers/messStaff.controller.js";
 import {
   createExpense,
@@ -28,7 +31,9 @@ router.get("/transactions-test", (req, res) => {
 });
 
 router.get("/", getMessStaff);
-router.put("/", updateMessStaff);
+router.post("/", addMessStaff); // ✅ Add new mess staff
+router.put("/:id", updateMessStaff);
+router.delete("/:id", deleteMessStaff);
 router.get("/stats", transactionStats);
 
 router.post(
@@ -37,6 +42,7 @@ router.post(
   restrictTo("messadmin"),
   createExpense
 );
+router.post("/auth/login", loginMessStaff); // ✅ LOGIN for mess staff
 
 router.get("/transactions", verifyToken, getMessTransactionsByRole);
 

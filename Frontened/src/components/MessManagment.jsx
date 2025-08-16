@@ -1,129 +1,187 @@
+// frontend/src/components/MessManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { Pencil } from 'lucide-react';
-import axios from '../api/axiosConfig';
+import { Pencil, Trash2, Save, XCircle, Loader2 } from 'lucide-react';
+import axios from '../api/axiosConfig'; // Assuming you have a pre-configured axios instance
 
 export default function MessManagement() {
-  const [isEditing, setIsEditing] = useState(false);
   const [staffList, setStaffList] = useState([]);
-  const [editedList, setEditedList] = useState([]);
+  const [newStaff, setNewStaff] = useState({ name: '', mobile: '', email: '' });
+  const [editingId, setEditingId] = useState(null);
+  const [editedData, setEditedData] = useState({});
+
+  // --- State for UI Feedback ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    const fetchStaff = async () => {
-      try {
-        const res = await axios.get('/api/mess-staff');
-        setStaffList(res.data);
-        setEditedList(res.data);
-      } catch (err) {
-        console.error('Failed to fetch mess staff:', err);
-      }
-    };
     fetchStaff();
   }, []);
 
-  const handleChange = (index, field, value) => {
-    const updatedList = [...editedList];
-    updatedList[index][field] = value;
-    setEditedList(updatedList);
+  const fetchStaff = async () => {
+    try {
+      const res = await axios.get('/mess-staff');
+      setStaffList(res.data);
+    } catch (err) {
+      console.error('Failed to fetch mess staff:', err);
+      setError('Could not load staff list. Please refresh the page.');
+    }
   };
 
-  const handleSave = async () => {
+  const handleNewStaffChange = (e) => {
+    setNewStaff({ ...newStaff, [e.target.name]: e.target.value });
+  };
+
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
     try {
-      await axios.put('/api/mess-staff', editedList);
-      setStaffList(editedList);
-      setIsEditing(false);
+      const res = await axios.post('/mess-staff/', newStaff);
+      setStaffList([...staffList, res.data]);
+      setSuccess(`Staff member "${newStaff.name}" added successfully! Password sent to email.`);
+      setNewStaff({ name: '', mobile: '', email: '' }); // Clear the form
+    } catch (err) {
+      console.error('Failed to add mess staff:', err);
+      const errorMessage = err.response?.data?.error || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditClick = (staff) => {
+    setEditingId(staff._id);
+    setEditedData({ name: staff.name, mobile: staff.mobile, email: staff.email });
+  };
+
+  const handleEditChange = (e) => {
+    setEditedData({ ...editedData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async (id) => {
+    try {
+      const res = await axios.put(`/mess-staff/${id}`, editedData);
+      setStaffList(staffList.map(staff => (staff._id === id ? res.data : staff)));
+      setEditingId(null);
     } catch (err) {
       console.error('Failed to update mess staff:', err);
+      setError('Failed to save changes. Please try again.');
     }
   };
 
   const handleCancel = () => {
-    setEditedList(staffList);
-    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this staff member?')) {
+      try {
+        await axios.delete(`/mess-staff/${id}`);
+        setStaffList(staffList.filter(staff => staff._id !== id));
+      } catch (err) {
+        console.error('Failed to delete mess staff:', err);
+        setError('Failed to delete staff member.');
+      }
+    }
   };
 
   return (
     <div className="bg-gray-200 p-4 rounded-lg">
       <h1 className="text-2xl font-bold mb-4">🍽️ Mess Management</h1>
-      <div className="flex justify-between items-center mb-4">
-        <div className="bg-white px-4 py-1 rounded-full text-black font-bold text-lg border border-black">
-          Authorised Mess Staff
-        </div>
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 font-semibold text-black hover:underline"
-          >
-            <Pencil size={20} />
-            Edit List
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="px-3 py-1 bg-green-500 text-white rounded"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              className="px-3 py-1 bg-red-500 text-white rounded"
-            >
-              Cancel
-            </button>
-          </div>
+
+      <div className="bg-white p-4 rounded-lg mb-6 shadow">
+        <h2 className="text-xl font-bold mb-3">Add New Mess Staff</h2>
+
+        {/* --- UI Feedback Messages --- */}
+        {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong className="font-bold">Error: </strong>
+                <span className="block sm:inline">{error}</span>
+            </div>
         )}
+        {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong className="font-bold">Success! </strong>
+                <span className="block sm:inline">{success}</span>
+            </div>
+        )}
+
+        <form onSubmit={handleAddMember} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <input
+            type="text" name="name" value={newStaff.name} onChange={handleNewStaffChange}
+            placeholder="Name" className="border px-3 py-2 rounded w-full" required
+          />
+          <input
+            type="text" name="mobile" value={newStaff.mobile} onChange={handleNewStaffChange}
+            placeholder="Mobile No" className="border px-3 py-2 rounded w-full" required
+          />
+          <input
+            type="email" name="email" value={newStaff.email} onChange={handleNewStaffChange}
+            placeholder="Email" className="border px-3 py-2 rounded w-full" required
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full md:w-auto flex items-center justify-center disabled:bg-blue-300"
+            disabled={isLoading}
+          >
+            {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+            {isLoading ? 'Adding...' : 'Add Member'}
+          </button>
+        </form>
       </div>
-      <table className="w-full text-center border border-black">
-        <thead className="bg-white">
-          <tr>
-            <th className="border border-black py-2 px-4">Name</th>
-            <th className="border border-black py-2 px-4">Mobile no</th>
-            <th className="border border-black py-2 px-4">Date of authorization</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white">
-          {(isEditing ? editedList : staffList).map((staff, index) => (
-            <tr key={index}>
-              <td className="border border-black font-bold py-2 px-4">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={staff.name}
-                    onChange={(e) => handleChange(index, 'name', e.target.value)}
-                    className="border px-2 py-1 w-full"
-                  />
-                ) : (
-                  staff.name
-                )}
-              </td>
-              <td className="border border-black font-bold py-2 px-4">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={staff.mobile}
-                    onChange={(e) => handleChange(index, 'mobile', e.target.value)}
-                    className="border px-2 py-1 w-full"
-                  />
-                ) : (
-                  staff.mobile
-                )}
-              </td>
-              <td className="border border-black font-bold py-2 px-4">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={staff.date}
-                    onChange={(e) => handleChange(index, 'date', e.target.value)}
-                    className="border px-2 py-1 w-full"
-                  />
-                ) : (
-                  staff.date
-                )}
-              </td>
+
+      <div className="bg-white px-4 py-2 rounded-full text-black font-bold text-lg border border-black mb-4 inline-block">
+        Authorised Mess Staff
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-center border border-black bg-white">
+          <thead>
+            <tr>
+              <th className="border border-black py-2 px-4">Name</th>
+              <th className="border border-black py-2 px-4">Mobile No</th>
+              <th className="border border-black py-2 px-4">Email</th>
+              <th className="border border-black py-2 px-4">Date of Authorization</th>
+              <th className="border border-black py-2 px-4">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {staffList.map((staff) => (
+              <tr key={staff._id}>
+                {editingId === staff._id ? (
+                  <>
+                    <td className="border border-black p-2"><input type="text" name="name" value={editedData.name} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
+                    <td className="border border-black p-2"><input type="text" name="mobile" value={editedData.mobile} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
+                    <td className="border border-black p-2"><input type="email" name="email" value={editedData.email} onChange={handleEditChange} className="border px-2 py-1 w-full"/></td>
+                    <td className="border border-black p-2 font-mono text-sm">{new Date(staff.dateOfAuthorization).toLocaleDateString()}</td>
+                    <td className="border border-black p-2">
+                      <div className="flex gap-2 justify-center">
+                        <button onClick={() => handleSave(staff._id)} className="text-green-600 hover:text-green-800"><Save size={20} /></button>
+                        <button onClick={handleCancel} className="text-gray-600 hover:text-gray-800"><XCircle size={20} /></button>
+                      </div>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="border border-black font-semibold py-2 px-4">{staff.name}</td>
+                    <td className="border border-black py-2 px-4">{staff.mobile}</td>
+                    <td className="border border-black py-2 px-4">{staff.email}</td>
+                    <td className="border border-black py-2 px-4 font-mono text-sm">{new Date(staff.dateOfAuthorization).toLocaleDateString()}</td>
+                    <td className="border border-black py-2 px-4">
+                      <div className="flex gap-4 justify-center">
+                        <button onClick={() => handleEditClick(staff)} className="text-blue-600 hover:text-blue-800"><Pencil size={20} /></button>
+                        <button onClick={() => handleDelete(staff._id)} className="text-red-600 hover:text-red-800"><Trash2 size={20} /></button>
+                      </div>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
