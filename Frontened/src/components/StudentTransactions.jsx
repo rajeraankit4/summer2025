@@ -43,7 +43,7 @@ const StudentTransactions = () => {
 
         // Test transactions route without auth
         const transactionsTestResponse = await axios.get(
-          "/mess-staff/transactions-test"
+          "/expense/transactions"
         );
         console.log(
           "✅ Transactions test route response:",
@@ -56,8 +56,8 @@ const StudentTransactions = () => {
       }
 
       // Fetch mess transactions
-      console.log("- Requesting URL:", "/mess-staff/transactions");
-      const messResponse = await axios.get("/mess-staff/transactions", {
+  console.log("- Requesting URL:", "/api/expense/transactions");
+  const messResponse = await axios.get("/expense/transactions", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

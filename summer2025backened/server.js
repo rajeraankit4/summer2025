@@ -31,7 +31,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/mess-staff", messStaffRoutes);
-app.use("/api/mess-staff", expenseRoutes);
+app.use("/api/expense", expenseRoutes);
 app.use("/api/canteen-staff", canteenStaffRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/stats", statsRoutes);
