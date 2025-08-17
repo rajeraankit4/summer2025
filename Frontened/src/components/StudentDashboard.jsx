@@ -1,3 +1,4 @@
+import QRCode from "react-qr-code";
 import { useState, useEffect } from "react";
 import { UtensilsCrossed, Bell, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -5,6 +6,24 @@ import axios from "../api/axiosConfig";
 
 const StudentDashboard = () => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [qrToken, setQrToken] = useState("");
+  const [qrLoading, setQrLoading] = useState(true);
+    // Fetch QR token for logged-in user
+    const fetchQrToken = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get("/auth/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setQrToken(res.data.qrToken || "");
+      } catch (err) {
+        setQrToken("");
+      } finally {
+        setQrLoading(false);
+      }
+    };
+    fetchQrToken();
   const [notifications, setNotifications] = useState([]);
   const [mealsThisMonth, setMealsThisMonth] = useState(0);
   const [avgDailyExpense, setAvgDailyExpense] = useState(0);
@@ -106,6 +125,21 @@ const StudentDashboard = () => {
 
   if (!currentUser) return <div>Loading...</div>;
 
+  const qrSection = (
+    <div style={{ margin: "2rem 0" }}>
+      {qrLoading ? (
+        <div>Loading QR code...</div>
+      ) : qrToken ? (
+        <>
+          <h3>Your Mess QR Code</h3>
+          <QRCode value={qrToken} size={200} />
+        </>
+      ) : (
+        <div>QR code not available.</div>
+      )}
+    </div>
+  );
+
   const quickStats = [
     {
       label: "Meals This Month",
@@ -129,6 +163,7 @@ const StudentDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {qrSection}
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {quickStats.map((stat, index) => (

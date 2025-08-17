@@ -165,3 +165,19 @@ export const signup = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+
+// Get logged-in user's details
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({
+      email: user.email,
+      role: user.role,
+      qrToken: user.qrToken || ""
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", details: err.message });
+  }
+};
