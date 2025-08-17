@@ -125,6 +125,19 @@ const StudentDashboard = () => {
 
   if (!currentUser) return <div>Loading...</div>;
 
+  // Refresh QR code handler
+  const handleRefreshQr = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post("/qr/refresh-token", {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setQrToken(res.data.qrToken || "");
+    } catch (err) {
+      alert("Failed to refresh QR code");
+    }
+  };
+
   const qrSection = (
     <div style={{ margin: "2rem 0" }}>
       {qrLoading ? (
@@ -133,6 +146,12 @@ const StudentDashboard = () => {
         <>
           <h3>Your Mess QR Code</h3>
           <QRCode value={qrToken} size={200} />
+          <button
+            onClick={handleRefreshQr}
+            style={{ marginTop: "1rem", padding: "0.5rem 1rem", background: "#2563eb", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}
+          >
+            Refresh QR Code
+          </button>
         </>
       ) : (
         <div>QR code not available.</div>

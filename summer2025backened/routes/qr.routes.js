@@ -1,6 +1,8 @@
+import { verifyToken } from "../middleware/auth.js";
 import express from "express";
 import messexpenses from "../models/messtransaction.model.js";
 import User from "../models/user.model.js";
+import crypto from "crypto";
 
 const router = express.Router();
 
@@ -21,7 +23,7 @@ router.post("/scan", async (req, res) => {
     const expense = new messexpenses({
       studentid: studentDetail.studentid,
       email: studentDetail.email,
-      amount: 50,
+      amount: 45,
       description: "Mess Meal",
     });
     await expense.save();
@@ -39,6 +41,26 @@ router.post("/scan", async (req, res) => {
       },
     });
   } catch (err) {
+    return res.status(500).json({ error: "Server error", details: err.message });
+  }
+});
+
+
+// POST /api/qr/refresh-token 
+router.post("/refresh-token", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user || user.role !== "student") {
+      return res.status(404).json({ error: "Student user not found" });
+    }
+    // Generate new QR token
+    const newToken = crypto.randomBytes(16).toString("hex");
+    user.qrToken = newToken;
+    await user.save();
+    return res.status(200).json({ qrToken: newToken });
+  } catch (err) {
+    console.error("Error refreshing QR token:", err);
     return res.status(500).json({ error: "Server error", details: err.message });
   }
 });
