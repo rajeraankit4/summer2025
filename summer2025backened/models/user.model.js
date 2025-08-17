@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
@@ -46,8 +45,10 @@ userSchema.methods.generateQrToken = async function () {
 
 // Auto-generate QR token for students on creation
 userSchema.pre("save", async function (next) {
- if (this.isNew && this.role === "student" && !this.qrToken) {
-    await this.generateQrToken();
+  if (this.isNew && this.role === "student" && !this.qrToken) {
+    // Generate QR token directly, do not call save()
+    const newToken = crypto.randomBytes(16).toString("hex");
+    this.qrToken = newToken;
   }
   next();
 });
