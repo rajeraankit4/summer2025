@@ -6,6 +6,7 @@ import { getWeeklyMenu } from "../../../api/menuApi";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import StudentSettings from "../../Students/Settings/StudentSettings";
 
 // ----- Student Menu -----
 const StudentMenu = () => {
@@ -468,51 +469,12 @@ const StudentProfile = () => {
   );
 };
 
+
+
 // ----- Settings -----
-const StudentSettings = () => (
-  <div className="space-y-6">
-    <h1 className="text-3xl font-bold text-gray-800 mb-6">⚙️ Settings</h1>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">Notifications</h3>
-        {["Menu Updates", "Expense Alerts", "System Announcements"].map(
-          (label, i) => (
-            <div key={i} className="flex justify-between items-center mb-2">
-              <span className="text-gray-700">{label}</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  defaultChecked
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-              </label>
-            </div>
-          )
-        )}
-      </div>
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">Account Security</h3>
-        {[
-          "Change Password",
-          "Two-Factor Authentication",
-          "Deactivate Account",
-        ].map((label, i) => (
-          <button
-            key={i}
-            className={`w-full text-left p-3 rounded-lg border mb-2 ${
-              label.includes("Deactivate")
-                ? "text-red-600 border-red-200 hover:bg-red-50"
-                : "hover:bg-gray-50 border-gray-200"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-);
+<StudentSettings />
+
+
 
 // ----- Student Routes -----
 const StudentRoutes = () => {
