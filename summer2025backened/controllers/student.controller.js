@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 
 export const getStudents = async (req, res) => {
@@ -56,5 +57,28 @@ export const verifyStudent = async (req, res) => {
     res.status(200).json({ message: "Student verified successfully" });
   } catch (err) {
     res.status(500).json({ error: "Error verifying student", details: err.message });
+  }
+};
+
+// Change password for student
+export const changeStudentPassword = async (req, res) => {
+  const { id } = req.params;
+  const { currentPassword, newPassword } = req.body;
+  if (!id || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  try {
+    const student = await User.findById(id);
+    if (!student) return res.status(404).json({ error: "Student not found" });
+    const isMatch = await student.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+    // Hash new password and save
+    student.password = await bcrypt.hash(newPassword, 12);
+    await student.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Error changing password", details: err.message });
   }
 };
