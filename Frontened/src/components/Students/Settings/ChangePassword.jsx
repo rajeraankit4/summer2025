@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 
 const ChangePassword = ({ studentId }) => {
-  // If studentId is not provided as a prop, get it from localStorage
+  // Use studentid for API calls
   if (!studentId) {
     studentId = localStorage.getItem("studentid");
   }
@@ -30,8 +30,7 @@ const ChangePassword = ({ studentId }) => {
       setLoading(true);
       setMessage("");
 
-      // ✅ Correct backend API call
-      await axios.put(`/api/student/${studentId}/change-password`, {
+      await axios.put(`/api/students/${studentId}/change-password`, {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
