@@ -1,6 +1,5 @@
 import { useState } from "react";
 import ChangePassword from "./ChangePassword";
-import DeactivateAccount from "./DeactivateAccount";
 
 const StudentSettings = () => {
   const [activeSection, setActiveSection] = useState(null);
@@ -21,18 +20,11 @@ const StudentSettings = () => {
             Change Password
           </button>
 
-          <button
-            onClick={() => setActiveSection("deactivate")}
-            className="w-full text-left p-3 rounded-lg border mb-2 text-red-600 border-red-200 hover:bg-red-50"
-          >
-            Deactivate Account
-          </button>
         </div>
 
         {/* Right Side (dynamic content) */}
         <div className="bg-white rounded-lg shadow p-6">
           {activeSection === "password" && <ChangePassword />}
-          {activeSection === "deactivate" && <DeactivateAccount />}
         </div>
       </div>
     </div>
