@@ -20,8 +20,9 @@ export const personaldetailInsert = async (req, res) => {
       studentid,
       hostelblock,
       roomno,
+      imageUrl
     } = req.body;
-
+console.log("Data received on server:", imageUrl);
     // Check if student already exists
     const existingStudent = await personaldetailModel.findOne({
       $or: [{ studentid }, { email }],
@@ -46,8 +47,9 @@ export const personaldetailInsert = async (req, res) => {
       studentid,
       hostelblock,
       roomno,
+     imageUrl
     });
-
+     
     await newDetail.save();
 
     res.status(201).send({

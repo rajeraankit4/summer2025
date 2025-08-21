@@ -11,25 +11,25 @@ import {
   UtensilsCrossed,
   GraduationCap,
   CreditCard,
+  CheckCircle, // Added for a better UI experience
 } from "lucide-react";
 
 const DocumentUpload = ({ data, updateData, onPrev }) => {
-  const [documents, setDocuments] = useState(data.documents || []);
-  const [dragActive, setDragActive] = useState(false);
+  // NEW: State holds an object of files, keyed by their title, e.g., { "Student ID Card": File }
+  const [uploadedFiles, setUploadedFiles] = useState(data.documents || {});
+  
+  // NEW: State tracks which specific box is being dragged over
+  const [dragActive, setDragActive] = useState(null); 
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
-  const acceptedFileTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/gif",
-  ];
+  const acceptedFileTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
   const maxFileSize = 10 * 1024 * 1024; // 10MB
 
   const requiredDocuments = [
     {
+      key: "studentIdCard",
       title: "Student ID Card",
       description: "Clear photo of your student identification card",
       icon: GraduationCap,
@@ -37,6 +37,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
       bgColor: "bg-blue-50",
     },
     {
+      key: "hostelAllotmentLetter",
       title: "Hostel Allotment Letter",
       description: "Official hostel room allotment document",
       icon: FileText,
@@ -44,6 +45,8 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
       bgColor: "bg-green-50",
     },
     {
+      // Added the missing 'key' for consistency
+      key: "feePaymentReceipt",
       title: "Fee Payment Receipt",
       description: "Proof of mess/canteen fee payment",
       icon: CreditCard,
@@ -52,50 +55,56 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
     },
   ];
 
-  const handleDrag = (e) => {
+  // MODIFIED: Handlers now accept a 'docType' to know which box is being used
+  const handleDrag = (e, docType) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    else setDragActive(false);
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(docType);
+    } else {
+      setDragActive(null);
+    }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e, docType) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(false);
+    setDragActive(null);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFiles(Array.from(e.dataTransfer.files));
+      handleFile(e.dataTransfer.files[0], docType);
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e, docType) => {
+    e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      handleFiles(Array.from(e.target.files));
+      handleFile(e.target.files[0], docType);
     }
   };
-
-  const handleFiles = (files) => {
-    const validFiles = files.filter((file) => {
-      if (!acceptedFileTypes.includes(file.type)) {
-        alert(`File type ${file.type} is not supported`);
-        return false;
-      }
-      if (file.size > maxFileSize) {
-        alert(`File ${file.name} is too large. Maximum size is 10MB`);
-        return false;
-      }
-      return true;
-    });
-
-    const newDocuments = [...documents, ...validFiles];
-    setDocuments(newDocuments);
-    updateData({ documents: newDocuments });
+  
+  // MODIFIED: Handles a single file for a specific document type
+  const handleFile = (file, docType) => {
+    if (!acceptedFileTypes.includes(file.type)) {
+      toast.error(`File type ${file.type} is not supported`);
+      return;
+    }
+    if (file.size > maxFileSize) {
+      toast.error(`File is too large. Maximum size is 10MB`);
+      return;
+    }
+    
+    // Updates the state object with the new file
+    const newFiles = { ...uploadedFiles, [docType]: file };
+    setUploadedFiles(newFiles);
+    updateData({ documents: newFiles });
   };
 
-  const removeDocument = (index) => {
-    const newDocuments = documents.filter((_, i) => i !== index);
-    setDocuments(newDocuments);
-    updateData({ documents: newDocuments });
+  // MODIFIED: Removes a file from the state object by its title
+  const removeDocument = (docType) => {
+    const newFiles = { ...uploadedFiles };
+    delete newFiles[docType];
+    setUploadedFiles(newFiles);
+    updateData({ documents: newFiles });
   };
 
   const getFileIcon = (type) =>
@@ -106,60 +115,53 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
     );
 
   const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
     const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
 
+  // NEW: A check to see if all required documents have been uploaded
+  const allDocumentsUploaded = Object.keys(uploadedFiles).length === requiredDocuments.length;
+
   const handleSubmit = async () => {
-    if (documents.length === 0) {
-      toast.error("Please upload at least one document");
+    if (!allDocumentsUploaded) {
+      toast.error("Please upload all required documents to continue.");
       return;
     }
 
     setIsSubmitting(true);
+    const formData = new FormData();
+
+    // Append files and their specific types to FormData
+    requiredDocuments.forEach(doc => {
+      const file = uploadedFiles[doc.title];
+      if (file) {
+        formData.append("documents", file);
+        formData.append("documentTypes", doc.key); // Send a consistent key to the backend
+      }
+    });
 
     try {
-      const formData = new FormData();
-      const documentTypes = [];
-
-      // Add files and their types to FormData
-      documents.forEach((file, index) => {
-        formData.append("documents", file);
-        // You can customize document types based on your requirements
-        documentTypes.push(`document-${index + 1}`);
-      });
-
-      // Add document types array
-      documentTypes.forEach((type) => {
-        formData.append("documentTypes", type);
-      });
-
-      // Upload documents using student ID from signup data
       const response = await axios.post(
         `http://localhost:5000/api/personaldetail/upload-documents/${data.studentId}`,
         formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       toast.success("Documents uploaded successfully!");
-
-      // Update signup data with uploaded documents
       updateData({
         documents: response.data.documents,
         verificationStatus: "pending",
       });
+      
+      // Delay setting isComplete to allow the toast notification to render first
+      setTimeout(() => setIsComplete(true), 500);
 
-      setIsComplete(true);
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload documents. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Allow the user to try again on failure
     }
   };
 
@@ -209,92 +211,56 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
         </p>
       </div>
 
+      {/* REPLACEMENT: Individual upload boxes */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        {requiredDocuments.map((doc, i) => {
+        {requiredDocuments.map((doc) => {
+          const file = uploadedFiles[doc.title];
           const Icon = doc.icon;
+          
           return (
             <div
-              key={i}
-              className={`${doc.bgColor} border rounded-2xl p-6 text-center`}
+              key={doc.title}
+              className={`border rounded-2xl p-6 text-center transition-all ${doc.bgColor} ${
+                dragActive === doc.title ? 'transform scale-105 shadow-lg' : ''
+              }`}
+              onDragEnter={(e) => handleDrag(e, doc.title)}
+              onDragLeave={(e) => handleDrag(e, null)}
+              onDragOver={(e) => handleDrag(e, doc.title)}
+              onDrop={(e) => handleDrop(e, doc.title)}
             >
-              <div
-                className={`w-16 h-16 ${doc.bgColor} rounded-xl mx-auto mb-4 flex justify-center items-center`}
-              >
+              <div className={`w-16 h-16 rounded-xl mx-auto mb-4 flex justify-center items-center ${doc.bgColor}`}>
                 <Icon className={`w-8 h-8 ${doc.color}`} />
               </div>
               <h3 className="font-bold text-gray-900">{doc.title}</h3>
-              <p className="text-sm text-gray-600">{doc.description}</p>
+              <p className="text-sm text-gray-600 mb-4">{doc.description}</p>
+
+              {file ? (
+                // If file is uploaded, show its details
+                <div className="flex items-center justify-between p-2 bg-white border rounded-lg shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 text-gray-500">{getFileIcon(file.type).props.children}</div>
+                    <div>
+                      <p className="font-semibold text-gray-700 text-xs truncate max-w-28">{file.name}</p>
+                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => removeDocument(doc.title)} className="hover:text-red-600 text-gray-400 p-1">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                // If no file, show the "Upload File" button
+                <label className="text-orange-600 font-bold underline cursor-pointer hover:text-orange-700">
+                  Upload File
+                  <input type="file" onChange={(e) => handleChange(e, doc.title)} className="hidden" accept={acceptedFileTypes.join(",")} />
+                </label>
+              )}
             </div>
           );
         })}
       </div>
 
-      <div
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-2xl p-12 text-center ${
-          dragActive
-            ? "border-orange-500 bg-orange-50"
-            : "border-gray-300 hover:border-orange-400 hover:bg-orange-50"
-        }`}
-      >
-        <Upload className="w-10 h-10 text-orange-600 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          Drop files here or{" "}
-          <label className="text-orange-600 font-bold underline cursor-pointer">
-            browse
-            <input
-              type="file"
-              multiple
-              onChange={handleChange}
-              className="hidden"
-              accept=".pdf,.jpg,.jpeg,.png,.gif"
-            />
-          </label>
-        </h3>
-        <p className="text-sm text-gray-500">
-          Supported formats: PDF, JPG, PNG, GIF | Max size: 10MB each
-        </p>
-      </div>
-
-      {documents.length > 0 && (
-        <div className="mt-10">
-          <h4 className="text-2xl font-semibold mb-4 text-gray-900 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-orange-500" /> Uploaded Documents
-            ({documents.length})
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {documents.map((doc, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 bg-orange-50 border rounded-xl shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow">
-                    {getFileIcon(doc.type)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-800 truncate max-w-48">
-                      {doc.name}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {formatFileSize(doc.size)}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => removeDocument(idx)}
-                  className="hover:text-red-600 text-gray-400"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* The large, single dropzone and the separate file list have been removed */}
 
       <div className="flex justify-between mt-12">
         <button
@@ -307,8 +273,9 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
 
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting || documents.length === 0}
-          className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition disabled:opacity-50"
+          // The button is disabled until all required documents are present
+          disabled={isSubmitting || !allDocumentsUploaded}
+          className="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Processing..." : "Complete Registration"}
         </button>
