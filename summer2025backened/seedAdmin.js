@@ -23,20 +23,6 @@ async function seedAdminUsers() {
         isVerified: true,
         name: "Super Admin",
       },
-      {
-        email: "mess.admin@mess.com",
-        password: "messpass",
-        role: "messadmin",
-        isVerified: true,
-        name: "Mess Admin",
-      },
-      {
-        email: "canteen.admin@mess.com",
-        password: "canteenpass",
-        role: "canteenadmin",
-        isVerified: true,
-        name: "Canteen Admin",
-      },
     ];
 
     for (const adminData of adminUsers) {
