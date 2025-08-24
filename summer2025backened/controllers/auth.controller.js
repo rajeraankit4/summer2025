@@ -1,5 +1,6 @@
 import Otp from "../models/otp.js";
 import User from "../models/user.model.js";
+import personaldetailModel from "../models/personaldetail.model.js";
 import { sendOtpVerificationEmail } from "../middleware/nodemailer.js";
 import jsonwebtoken from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -179,5 +180,42 @@ export const getMe = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: "Server error", details: err.message });
+  }
+};
+
+export const verifyStudentEmailForSignup = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+
+  try {
+    // 1. Check User collection
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ success: false, message: "User already registered" });
+    }
+
+    // 2. Check PersonalDetails collection
+    const personalDetail = await personaldetailModel.findOne({ email });
+    if (!personalDetail) {
+      return res.status(200).json({ success: true, message: "Proceed to registration!!" });
+    }
+
+    // 2a. If documentsVerified = true, treat as already approved
+    if (personalDetail.documentsVerified === true) {
+      return res.status(400).json({ success: false, message: "Already approved(coz documentsverified is true" });
+    }
+
+    // 2b. If documentsVerified = false
+    if (personalDetail.documentsVerified === false) {
+      // i) If no documents uploaded, delete entry and allow registration
+      if (!personalDetail.documents || personalDetail.documents.length === 0) {
+        await personaldetailModel.deleteOne({ email });
+        return res.status(200).json({ success: true, message: "Proceed to registration (no docs present, restart fresh)" });
+      }
+      // ii) If documents uploaded, return pending
+      return res.status(400).json({ success: false, message: "Your request is pending with admin" });
+    }
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Server error", details: err.message });
   }
 };
