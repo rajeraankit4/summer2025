@@ -14,6 +14,16 @@ export const sendVerificationCode = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
+  // Use verifyStudentEmailForSignup to check eligibility before sending OTP
+  const checkRes = await verifyStudentEmailForSignup({ body: { email } }, {
+    status: (code) => ({ json: (obj) => ({ code, ...obj }) }),
+    json: (obj) => obj
+  });
+  // If not eligible, block OTP request
+  if (checkRes && checkRes.success === false) {
+    return res.status(400).json({ error: checkRes.message });
+  }
+
   try {
     const otp = generateOtp();
     console.log(otp);
