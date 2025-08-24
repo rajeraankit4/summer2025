@@ -54,10 +54,10 @@ router.post("/refresh-token", verifyToken, async (req, res) => {
     if (!user || user.role !== "student") {
       return res.status(404).json({ error: "Student user not found" });
     }
+    
     // Generate new QR token
-    const newToken = crypto.randomBytes(16).toString("hex");
-    user.qrToken = newToken;
-    await user.save();
+    const newToken = await user.generateQrToken();
+
     return res.status(200).json({ qrToken: newToken });
   } catch (err) {
     console.error("Error refreshing QR token:", err);

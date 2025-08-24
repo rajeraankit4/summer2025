@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
   qrToken: {
     type: String,
     default: "",
+    unique: true,
     required: false,
   },
 });
@@ -31,14 +32,31 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 };
 
 // Helper method to generate a new QR token (only for students)
-userSchema.methods.generateQrToken = async function () {
+userSchema.methods.generateQrToken = async function (save = true) {
   if (this.role !== "student") {
     throw new Error("QR token can only be generated for students.");
   }
-  // Generate a random string (32 hex chars)
-  const newToken = crypto.randomBytes(16).toString("hex");
+
+  // Fetch the personaldetail document
+  const PersonalDetail = mongoose.model("personaldetail");
+  const personalDetailsDoc = await PersonalDetail.findById(this.studentDetails);
+
+  if (!personalDetailsDoc || !personalDetailsDoc.studentid) {
+    throw new Error("Student details or studentid not found.");
+  }
+
+  // Random 16-byte hex string
+  const randomPart = crypto.randomBytes(16).toString("hex");
+
+  // Append student's unique studentid from personalDetails to make the randomly generated token unique
+  const newToken = `${randomPart}-${personalDetailsDoc.studentid}`;
+
   this.qrToken = newToken;
-  await this.save();
+
+  if (save) {
+    await this.save();
+  }
+
   return newToken;
 };
 
@@ -46,9 +64,7 @@ userSchema.methods.generateQrToken = async function () {
 // Auto-generate QR token for students on creation
 userSchema.pre("save", async function (next) {
   if (this.isNew && this.role === "student" && !this.qrToken) {
-    // Generate QR token directly, do not call save()
-    const newToken = crypto.randomBytes(16).toString("hex");
-    this.qrToken = newToken;
+    await this.generateQrToken(false);
   }
   next();
 });
