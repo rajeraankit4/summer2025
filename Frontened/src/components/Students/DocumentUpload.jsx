@@ -17,14 +17,19 @@ import {
 const DocumentUpload = ({ data, updateData, onPrev }) => {
   // NEW: State holds an object of files, keyed by their title, e.g., { "Student ID Card": File }
   const [uploadedFiles, setUploadedFiles] = useState(data.documents || {});
-  
+
   // NEW: State tracks which specific box is being dragged over
-  const [dragActive, setDragActive] = useState(null); 
-  
+  const [dragActive, setDragActive] = useState(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
-  const acceptedFileTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+  const acceptedFileTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+  ];
   const maxFileSize = 10 * 1024 * 1024; // 10MB
 
   const requiredDocuments = [
@@ -81,7 +86,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
       handleFile(e.target.files[0], docType);
     }
   };
-  
+
   // MODIFIED: Handles a single file for a specific document type
   const handleFile = (file, docType) => {
     if (!acceptedFileTypes.includes(file.type)) {
@@ -92,7 +97,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
       toast.error(`File is too large. Maximum size is 10MB`);
       return;
     }
-    
+
     // Updates the state object with the new file
     const newFiles = { ...uploadedFiles, [docType]: file };
     setUploadedFiles(newFiles);
@@ -115,14 +120,15 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
     );
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
 
   // NEW: A check to see if all required documents have been uploaded
-  const allDocumentsUploaded = Object.keys(uploadedFiles).length === requiredDocuments.length;
+  const allDocumentsUploaded =
+    Object.keys(uploadedFiles).length === requiredDocuments.length;
 
   const handleSubmit = async () => {
     if (!allDocumentsUploaded) {
@@ -134,7 +140,7 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
     const formData = new FormData();
 
     // Append files and their specific types to FormData
-    requiredDocuments.forEach(doc => {
+    requiredDocuments.forEach((doc) => {
       const file = uploadedFiles[doc.title];
       if (file) {
         formData.append("documents", file);
@@ -154,10 +160,9 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
         documents: response.data.documents,
         verificationStatus: "pending",
       });
-      
+
       // Delay setting isComplete to allow the toast notification to render first
       setTimeout(() => setIsComplete(true), 500);
-
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload documents. Please try again.");
@@ -174,12 +179,20 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
           </div>
         </div>
         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-          🎉 Welcome to FoodieHub!
+          🎉 Welcome to PU FOOD HUB!
         </h2>
         <p className="text-xl text-gray-600 mb-8">
           Your registration is complete! Get ready for an amazing dining
           experience.
         </p>
+        <div className="text-center text-gray-700">
+          <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600" onClick={() => {
+            window.location.href = "/";
+          }}
+          >
+            Go to HOME
+          </button>
+        </div>
 
         <div className="mt-8 flex justify-center gap-4">
           <div className="flex items-center gap-2 text-orange-600">
@@ -216,19 +229,23 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
         {requiredDocuments.map((doc) => {
           const file = uploadedFiles[doc.title];
           const Icon = doc.icon;
-          
+
           return (
             <div
               key={doc.title}
-              className={`border rounded-2xl p-6 text-center transition-all ${doc.bgColor} ${
-                dragActive === doc.title ? 'transform scale-105 shadow-lg' : ''
+              className={`border rounded-2xl p-6 text-center transition-all ${
+                doc.bgColor
+              } ${
+                dragActive === doc.title ? "transform scale-105 shadow-lg" : ""
               }`}
               onDragEnter={(e) => handleDrag(e, doc.title)}
               onDragLeave={(e) => handleDrag(e, null)}
               onDragOver={(e) => handleDrag(e, doc.title)}
               onDrop={(e) => handleDrop(e, doc.title)}
             >
-              <div className={`w-16 h-16 rounded-xl mx-auto mb-4 flex justify-center items-center ${doc.bgColor}`}>
+              <div
+                className={`w-16 h-16 rounded-xl mx-auto mb-4 flex justify-center items-center ${doc.bgColor}`}
+              >
                 <Icon className={`w-8 h-8 ${doc.color}`} />
               </div>
               <h3 className="font-bold text-gray-900">{doc.title}</h3>
@@ -238,13 +255,22 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
                 // If file is uploaded, show its details
                 <div className="flex items-center justify-between p-2 bg-white border rounded-lg shadow-sm">
                   <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 text-gray-500">{getFileIcon(file.type).props.children}</div>
+                    <div className="flex-shrink-0 text-gray-500">
+                      {getFileIcon(file.type).props.children}
+                    </div>
                     <div>
-                      <p className="font-semibold text-gray-700 text-xs truncate max-w-28">{file.name}</p>
-                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                      <p className="font-semibold text-gray-700 text-xs truncate max-w-28">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatFileSize(file.size)}
+                      </p>
                     </div>
                   </div>
-                  <button onClick={() => removeDocument(doc.title)} className="hover:text-red-600 text-gray-400 p-1">
+                  <button
+                    onClick={() => removeDocument(doc.title)}
+                    className="hover:text-red-600 text-gray-400 p-1"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -252,7 +278,12 @@ const DocumentUpload = ({ data, updateData, onPrev }) => {
                 // If no file, show the "Upload File" button
                 <label className="text-orange-600 font-bold underline cursor-pointer hover:text-orange-700">
                   Upload File
-                  <input type="file" onChange={(e) => handleChange(e, doc.title)} className="hidden" accept={acceptedFileTypes.join(",")} />
+                  <input
+                    type="file"
+                    onChange={(e) => handleChange(e, doc.title)}
+                    className="hidden"
+                    accept={acceptedFileTypes.join(",")}
+                  />
                 </label>
               )}
             </div>
