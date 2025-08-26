@@ -452,6 +452,14 @@ const PersonalDetails = () => {
                         {new Date(selectedStudent.DOB).toLocaleDateString()}
                       </p>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <p className="text-gray-900 bg-white px-3 py-2 rounded border">
+                        {selectedStudent.email}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
