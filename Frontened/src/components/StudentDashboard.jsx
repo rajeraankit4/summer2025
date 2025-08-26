@@ -172,12 +172,6 @@ const StudentDashboard = () => {
       icon: Receipt,
       color: "text-purple-600",
     },
-    {
-      label: "Pending Notifications",
-      value: notifications.length,
-      icon: Bell,
-      color: "text-orange-600",
-    },
   ];
 
   return (
