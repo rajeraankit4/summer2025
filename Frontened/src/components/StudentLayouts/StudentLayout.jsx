@@ -106,26 +106,7 @@ export default function StudentLayout() {
           </nav>
         </div>
 
-        {/* Student Info Card in Sidebar */}
-        <div className="px-6 pb-6 mt-auto">
-          <div className="bg-white bg-opacity-10 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <img
-                src={currentStudent.profilePic || "/src/assets/ProfilePic.png"}
-                alt="Profile"
-                className="h-10 w-10 rounded-full object-cover bg-white p-1"
-              />
-              <div>
-                <p className="text-sm font-medium text-white">
-                  {currentStudent.firstName} {currentStudent.lastName}
-                </p>
-                <p className="text-xs text-white text-opacity-80">
-                  {currentStudent.hostelBlock} - {currentStudent.roomNumber}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </aside>
 
       {/* Main Content */}
