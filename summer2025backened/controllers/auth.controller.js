@@ -100,7 +100,7 @@ export const login = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email, role }).populate("studentDetails");
+    const user = await User.findOne({ email, role }).populate("studentDetails", "firstname lastname email phone");
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -113,7 +113,6 @@ export const login = async (req, res) => {
     if (!user.isVerified) {
       return res.status(403).json({ error: "User not verified" });
     }
-    console.log(process.env.JWT_SECRET);
     const token = jsonwebtoken.sign(
       { id: user._id,email: user.email,
          role: user.role },
@@ -129,7 +128,7 @@ export const login = async (req, res) => {
     id: user._id,
     email: user.email,
     role: user.role,
-    studentDetails: user.studentDetails, // ✅ include full populated student data
+    studentDetails: user.studentDetails, 
   },
 });
 

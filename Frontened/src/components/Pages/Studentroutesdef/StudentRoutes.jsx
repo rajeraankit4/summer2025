@@ -149,7 +149,6 @@ const StudentExpenses = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         const loggedInStudentId = localStorage.getItem("studentid"); // or extract from decoded JWT
         const match = res.data.personaldetailList.find(
           (p) => p.studentid === loggedInStudentId
@@ -389,21 +388,12 @@ const StudentProfile = () => {
   const [student, setStudent] = useState(null);
   const [phone, setPhone] = useState("");
   const [profilePic, setProfilePic] = useState("");
-
   useEffect(() => {
-    const mockStudent = {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john@example.com",
-      studentId: "ST001",
-      hostelBlock: "Block A",
-      roomNumber: "101",
-      phone: "9876543210",
-      profilePic: "/src/assets/ProfilePic.png",
-    };
-    setStudent(mockStudent);
-    setPhone(mockStudent.phone);
-    setProfilePic(mockStudent.profilePic);
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      setStudent(user.studentDetails);
+      console.log(user.studentDetails);
+    }
   }, []);
 
   const handleUpdateProfile = () => {
@@ -414,7 +404,7 @@ const StudentProfile = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">👤 My Profile</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Profile</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow p-6 text-center">
           <img
@@ -423,25 +413,16 @@ const StudentProfile = () => {
             className="h-24 w-24 rounded-full mx-auto mb-4 object-cover bg-gray-100 p-2"
           />
           <h2 className="text-xl font-semibold">
-            {student.firstName} {student.lastName}
+            {student.firstname} {student.lastname}
           </h2>
-          <p className="text-gray-600">
-            {student.hostelBlock}, Room {student.roomNumber}
-          </p>
-          <button
-            onClick={() => alert("Change photo not implemented")}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg mt-4"
-          >
-            Change Photo
-          </button>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Personal Info</h3>
           <div className="space-y-4">
             <input
               type="text"
-              value={`${student.firstName} ${student.lastName}`}
               readOnly
+              value={`${student.firstname} ${student.lastname}`}
               className="w-full border px-3 py-2 rounded-lg"
             />
             <input
@@ -452,16 +433,11 @@ const StudentProfile = () => {
             />
             <input
               type="tel"
-              value={phone}
+              value={student.phone}
+              readOnly
               onChange={(e) => setPhone(e.target.value)}
               className="w-full border px-3 py-2 rounded-lg"
             />
-            <button
-              onClick={handleUpdateProfile}
-              className="w-full bg-green-600 text-white py-2 rounded-lg"
-            >
-              Update Profile
-            </button>
           </div>
         </div>
       </div>
