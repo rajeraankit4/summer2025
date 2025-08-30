@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import personaldetailModel from "../models/personaldetail.model.js";
 import messexpenses from "../models/messtransaction.model.js";
+import Stats from "../models/stats.model.js";
 
 // ✅ Create Expense
 export const createExpense = async (req, res) => {
@@ -27,8 +28,12 @@ export const createExpense = async (req, res) => {
     if (!studentDetail) {
       return res.status(404).json({ message: "Student not found" });
     }
+    const stat = await Stats.findOneAndUpdate(
+      {},
+      { $inc: { mealsToday: 1 } },
+      { new: true, upsert: true }
+    );
 
-    // Create expense using email from personal details (no user link required)
     const expense = new messexpenses({
       email: studentDetail.email,
       studentid,
@@ -49,12 +54,16 @@ export const createExpense = async (req, res) => {
         studentName: `${studentDetail.firstname} ${studentDetail.lastname}`,
         email: expense.email,
       },
+      stats: {
+        mealsToday: stat.mealsToday,
+      },
     });
   } catch (error) {
     console.error("Error adding mess expense:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-}; // <-- ✅ Closing createExpense
+};
+
 
 // ✅ Get Recent Expenses (for frontend table)
 export const getRecentExpenses = async (req, res) => {

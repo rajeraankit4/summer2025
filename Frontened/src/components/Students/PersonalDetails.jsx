@@ -482,6 +482,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
   <input
     value={formData.email}
+    readOnly
     onChange={getValue}
     type="email"
     id="email"
