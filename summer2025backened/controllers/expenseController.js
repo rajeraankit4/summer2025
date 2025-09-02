@@ -94,16 +94,25 @@ export const getRecentExpenses = async (req, res) => {
   }
 }; // <-- ✅ Closing getRecentExpenses
 
-// ✅ Get All Transactions Based on Role
-export const getMessTransactionsByRole = async (req, res) => {
+// ✅ Unified Get Mess Transactions (role + optional :studentid)
+export const getMessTransactions = async (req, res) => {
   try {
     const { role, email } = req.user;
     const trimmedEmail = email.trim();
+    const { studentid } = req.params; // <-- from URL param, not query
 
     let transactions = [];
 
     if (role === "superadmin" || role === "messadmin") {
-      transactions = await messexpenses.find().sort({ date: -1 });
+      if (studentid) {
+        // fetch only this student's transactions
+        transactions = await messexpenses
+          .find({ studentid: studentid.toUpperCase() })
+          .sort({ date: -1 });
+      } else {
+        // fetch all
+        transactions = await messexpenses.find().sort({ date: -1 });
+      }
     } else if (role === "student") {
       transactions = await messexpenses
         .find({
@@ -128,8 +137,6 @@ export const getMessTransactionsByRole = async (req, res) => {
       })
     );
 
-    console.log("Formatted transactions:", formatted);
-
     res.status(200).json({
       status: 1,
       message: "Transactions fetched successfully",
@@ -142,32 +149,5 @@ export const getMessTransactionsByRole = async (req, res) => {
       message: "Failed to fetch transactions",
       error: error.message,
     });
-  }
-}; // <-- ✅ Closing getMessTransactionsByRole
-
-// ✅ Get Expenses for a Specific Student
-export const getStudentExpenses = async (req, res) => {
-  try {
-    const { studentid } = req.params;
-    if (!studentid) {
-      return res.status(400).json({ message: "Student ID is required" });
-    }
-    const transactions = await messexpenses.find({ studentid: studentid.toUpperCase() }).sort({ date: -1 });
-    const formatted = transactions.map(({ _id, studentid, email, amount, description, date }) => ({
-      _id,
-      studentid,
-      email,
-      amount,
-      description,
-      date,
-    }));
-    res.status(200).json({
-      status: 1,
-      message: "Student expenses fetched successfully",
-      data: formatted,
-    });
-  } catch (error) {
-    console.error("Error fetching student expenses:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
