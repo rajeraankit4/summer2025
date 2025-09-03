@@ -141,17 +141,30 @@ export const login = async (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, registrationNumber } = req.body;
 
     // Validation
     if (!email || !password || !role) {
       return res.status(400).json({ error: "Email, password, and role are required" });
     }
 
+    // Additional validation for student role
+    if (role === "student" && !registrationNumber) {
+      return res.status(400).json({ error: "Registration number is required for students" });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already registered" });
+    }
+
+    // Check if registration number already exists (for students)
+    if (role === "student") {
+      const existingRegNo = await personaldetailModel.findOne({ registrationNumber });
+      if (existingRegNo) {
+        return res.status(400).json({ error: "Registration number already exists" });
+      }
     }
 
     // Hash the password
@@ -224,6 +237,24 @@ export const verifyStudentEmailForSignup = async (req, res) => {
       // ii) If documents uploaded, return pending
       return res.status(400).json({ success: false, message: "Your request is pending with admin" });
     }
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Server error", details: err.message });
+  }
+};
+
+// Verify registration number availability
+export const verifyRegistrationNumber = async (req, res) => {
+  const { registrationNumber } = req.body;
+  if (!registrationNumber) {
+    return res.status(400).json({ success: false, message: "Registration number is required" });
+  }
+
+  try {
+    const existingRegNo = await personaldetailModel.findOne({ registrationNumber });
+    if (existingRegNo) {
+      return res.status(400).json({ success: false, message: "Registration number already exists" });
+    }
+    return res.status(200).json({ success: true, message: "Registration number is available" });
   } catch (err) {
     return res.status(500).json({ success: false, message: "Server error", details: err.message });
   }

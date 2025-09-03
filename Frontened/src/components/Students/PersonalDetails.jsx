@@ -39,6 +39,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
     state: data?.state || "",
     zipcode: data?.zipCode || "",
     studentid: data?.studentId || "",
+    registrationNumber: data?.registrationNumber || "",
     hostelblock: data?.hostelBlock || "",
     roomno: data?.roomNumber || "",
     imageUrl: data?.imageUrl || "", // NEW: Field to store the image URL
@@ -158,6 +159,7 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
         state: updatedFormData.state,
         zipCode: updatedFormData.zipcode,
         studentId: updatedFormData.studentid,
+        registrationNumber: updatedFormData.registrationNumber,
         hostelBlock: updatedFormData.hostelblock,
         roomNumber: updatedFormData.roomno,
         imageUrl: updatedFormData.imageUrl, // NEW: Pass the URL to the parent
@@ -232,6 +234,23 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       if (!firstInvalidField) firstInvalidField = "DOB";
     }
   }
+
+  // ✅ Registration Number
+if (!formData.registrationNumber?.trim()) {
+  newErrors.registrationNumber = "Registration Number is required";
+  if (!firstInvalidField) firstInvalidField = "registrationNumber";
+} else {
+  const regNoPattern = /^[A-Za-z0-9]+$/; // Only letters and numbers
+
+  if (!regNoPattern.test(formData.registrationNumber)) {
+    newErrors.registrationNumber = "Registration Number must be alphanumeric";
+    if (!firstInvalidField) firstInvalidField = "registrationNumber";
+  } else if (formData.registrationNumber.length < 5 || formData.registrationNumber.length > 15) {
+    newErrors.registrationNumber = "Registration Number must be between 5 and 15 characters";
+    if (!firstInvalidField) firstInvalidField = "registrationNumber";
+  }
+}
+
 
   // ✅ Address
   if (!formData.address?.trim()) {
@@ -522,6 +541,46 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
   </div>
   {errors.DOB && <p id="dob-error" className="text-red-500 text-sm mt-1">{errors.DOB}</p>}
 </div>
+
+<div>
+  <label htmlFor="registrationNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+    Registration Number <span className="text-red-500">*</span>
+  </label>
+  <div className="relative">
+    <input
+      value={formData.registrationNumber}
+      onChange={getValue}
+      type="text"
+      id="registrationNumber"
+      name="registrationNumber"
+      placeholder="Enter registration number"
+      className={`w-full px-4 py-3 pl-12 border-2 rounded-xl ${
+        errors.registrationNumber
+          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+          : "border-gray-200 focus:ring-orange-200 focus:border-orange-500"
+      }`}
+      aria-invalid={!!errors.registrationNumber}
+      aria-describedby={errors.registrationNumber ? "registrationNumber-error" : undefined}
+    />
+    {/* Icon for registration number */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0-1.104.896-2 2-2h4c1.104 0 2 .896 2 2v6c0 1.104-.896 2-2 2h-4c-1.104 0-2-.896-2-2v-6zM6 11c0-1.104.896-2 2-2h.5a.5.5 0 01.5.5V19a.5.5 0 01-.5.5H8c-1.104 0-2-.896-2-2v-6z" />
+    </svg>
+  </div>
+  {errors.registrationNumber && (
+    <p id="registrationNumber-error" className="text-red-500 text-sm mt-1">
+      {errors.registrationNumber}
+    </p>
+  )}
+</div>
+
 
 
 
