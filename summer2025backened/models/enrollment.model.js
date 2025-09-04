@@ -3,8 +3,7 @@ import mongoose from "mongoose";
 const enrollmentSchema = new mongoose.Schema({
   registrationNumber: { 
     type: String, 
-    required: true,
-    ref: 'personaldetails'
+    required: true
   },
   hostelRollNo: { 
     type: String, 

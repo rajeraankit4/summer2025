@@ -254,6 +254,8 @@ export const verifyDocuments = async (req, res) => {
     const { regno } = req.params;  // regno comes from the route param
     const { status } = req.body;   // expected values: "approved" or "rejected"
 
+    console.log(`Verification request for regno: ${regno}, status: ${status}`);
+
     // Find the active enrollment directly using registrationNumber and isActive
     const enrollment = await enrollmentModel.findOne({
       registrationNumber: regno,
@@ -261,8 +263,11 @@ export const verifyDocuments = async (req, res) => {
     });
 
     if (!enrollment) {
+      console.log(`No active enrollment found for regno: ${regno}`);
       return res.status(404).json({ message: "Active enrollment not found for this registration number" });
     }
+
+    console.log(`Found enrollment for regno: ${regno}`);
 
     // Find the permanent student details using the registrationNumber
     const student = await personaldetailModel.findOne({
@@ -270,23 +275,44 @@ export const verifyDocuments = async (req, res) => {
     });
 
     if (!student) {
+      console.log(`No student personal details found for regno: ${regno}`);
       return res.status(404).json({ message: "Student personal details not found" });
     }
+
+    console.log(`Found student details for: ${student.firstname} ${student.lastname}, email: ${student.email}`);
 
     // Update verification fields
     enrollment.documentsVerified = status === "approved";
     enrollment.verificationStatus = status;
     await enrollment.save();
 
+    console.log(`Updated verification status to: ${status} for regno: ${regno}`);
+
     // If approved, create user account and send login credentials
     if (status === "approved") {
       try {
+        console.log(`Processing approval for student: ${student.email}`);
+        
         const existingUser = await User.findOne({ email: student.email });
+        let passwordToSend;
+        let userCreated = false;
 
-        if (!existingUser) {
+        if (existingUser) {
+          console.log(`User already exists for email: ${student.email}, will send existing credentials`);
+          // For existing users, we can't send the original password since it's hashed
+          // Generate a new password and update the existing user
+          passwordToSend = generateReadablePassword(10);
+          const hashedPassword = await bcrypt.hash(passwordToSend, 10);
+          
+          existingUser.password = hashedPassword;
+          await existingUser.save();
+          console.log(`Updated password for existing user: ${student.email}`);
+        } else {
+          console.log(`Creating new user account for: ${student.email}`);
+          
           // Generate secure password
-          const generatedPassword = generateReadablePassword(10);
-          const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+          passwordToSend = generateReadablePassword(10);
+          const hashedPassword = await bcrypt.hash(passwordToSend, 10);
 
           // Create new user and link to personal details
           const newUser = new User({
@@ -298,23 +324,30 @@ export const verifyDocuments = async (req, res) => {
           });
 
           await newUser.save();
-
-          // Send login credentials via email
-          const fullName = `${student.firstname} ${student.lastname}`;
-          await sendLoginCredentials(
-            student.email,
-            fullName,
-            student.email,
-            generatedPassword
-          );
-
-          console.log(`Login credentials sent to ${student.email}`);
+          userCreated = true;
+          console.log(`User account created successfully for: ${student.email}`);
         }
+
+        // Always send login credentials when approving
+        const fullName = `${student.firstname} ${student.lastname}`;
+        console.log(`Attempting to send login credentials to: ${student.email}`);
+        
+        await sendLoginCredentials(
+          student.email,
+          fullName,
+          student.email,
+          passwordToSend
+        );
+
+        console.log(`Login credentials sent successfully to ${student.email}`);
+
       } catch (emailError) {
         console.error("Error creating user account or sending email:", emailError);
         // Don't block document verification even if email fails
       }
     }
+
+    console.log(`Verification process completed for regno: ${regno}`);
 
     res.status(200).json({
       message: `Documents ${status} successfully`,
@@ -334,11 +367,43 @@ export const getPendingVerifications = async (req, res) => {
     const pendingEnrollments = await enrollmentModel.find({
       verificationStatus: "pending",
       documents: { $exists: true, $not: { $size: 0 } },
-    }).populate('registrationNumber', 'firstname lastname email studentid');
+    });
+
+    // Manually populate the registration details
+    const enrichedEnrollments = await Promise.all(
+      pendingEnrollments.map(async (enrollment) => {
+        const enrollmentObj = enrollment.toObject();
+        
+        // Find the personal details by registrationNumber
+        const personalDetails = await personaldetailModel.findOne({
+          registrationNumber: enrollment.registrationNumber
+        });
+
+        if (personalDetails) {
+          enrollmentObj.personalDetails = {
+            firstname: personalDetails.firstname,
+            lastname: personalDetails.lastname,
+            email: personalDetails.email,
+            studentid: personalDetails.studentid,
+            DOB: personalDetails.DOB,
+            phone: personalDetails.phone,
+            registrationNumber: personalDetails.registrationNumber,
+            address: personalDetails.address,
+            city: personalDetails.city,
+            state: personalDetails.state,
+            zipcode: personalDetails.zipcode
+          };
+        }
+
+        // Store the original registration number string
+        enrollmentObj.originalRegistrationNumber = enrollment.registrationNumber;
+        return enrollmentObj;
+      })
+    );
 
     res.status(200).json({
       status: 1,
-      pendingVerifications: pendingEnrollments,
+      pendingVerifications: enrichedEnrollments,
     });
   } catch (error) {
     console.error("Error fetching pending verifications:", error);
@@ -356,12 +421,43 @@ export const getAllVerifications = async (req, res) => {
       .find({
         documents: { $exists: true, $not: { $size: 0 } },
       })
-      .populate('registrationNumber', 'firstname lastname email studentid')
       .sort({ createdAt: -1 });
+
+    // Manually populate the registration details
+    const enrichedEnrollments = await Promise.all(
+      allEnrollments.map(async (enrollment) => {
+        const enrollmentObj = enrollment.toObject();
+        
+        // Find the personal details by registrationNumber
+        const personalDetails = await personaldetailModel.findOne({
+          registrationNumber: enrollment.registrationNumber
+        });
+
+        if (personalDetails) {
+          enrollmentObj.personalDetails = {
+            firstname: personalDetails.firstname,
+            lastname: personalDetails.lastname,
+            email: personalDetails.email,
+            studentid: personalDetails.studentid,
+            DOB: personalDetails.DOB,
+            phone: personalDetails.phone,
+            registrationNumber: personalDetails.registrationNumber,
+            address: personalDetails.address,
+            city: personalDetails.city,
+            state: personalDetails.state,
+            zipcode: personalDetails.zipcode
+          };
+        }
+
+        // Store the original registration number string
+        enrollmentObj.originalRegistrationNumber = enrollment.registrationNumber;
+        return enrollmentObj;
+      })
+    );
 
     res.status(200).json({
       status: 1,
-      verifications: allEnrollments,
+      verifications: enrichedEnrollments,
     });
   } catch (error) {
     console.error("Error fetching all verifications:", error);

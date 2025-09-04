@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   // ✅ Link to student details if this user is a student
   studentDetails: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "personaldetail",
+    ref: "personaldetails",
   },
 
   // ✅ QR token for attendance (only for students)
@@ -38,7 +38,7 @@ userSchema.methods.generateQrToken = async function (save = true) {
   }
 
   // Fetch the personaldetail document
-  const PersonalDetail = mongoose.model("personaldetail");
+  const PersonalDetail = mongoose.model("personaldetails");
   const personalDetailsDoc = await PersonalDetail.findById(this.studentDetails);
 
   if (!personalDetailsDoc || !personalDetailsDoc.studentid) {

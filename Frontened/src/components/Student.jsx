@@ -23,11 +23,12 @@ const PersonalDetails = () => {
   const [largeImageUrl, setLargeImageUrl] = useState("");
 
   const getAllpersonalDetails = () => {
+    // Use the all-verifications endpoint to get students with enrollment data
     axios
-      .get("http://localhost:5000/api/personaldetail/view")
+      .get("http://localhost:5000/api/personaldetail/all-verifications")
       .then((res) => {
         if (res.data.status) {
-          setPersonalDetails(res.data.personaldetailList);
+          setPersonalDetails(res.data.verifications);
         }
       })
       .catch((err) => {
@@ -136,22 +137,22 @@ const PersonalDetails = () => {
                     >
                       <img
                         src={detail.imageUrl}
-                        alt={`${detail.firstname} ${detail.lastname}`}
+                        alt={`${detail.personalDetails?.firstname} ${detail.personalDetails?.lastname}`}
                         className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 hover:border-blue-500 transition"
                       />
                     </button>
                   </td>
                   <td className="px-4 py-4 font-medium text-gray-900 whitespace-nowrap">
-                    {detail.firstname} {detail.lastname}
+                    {detail.personalDetails?.firstname} {detail.personalDetails?.lastname}
                   </td>
                   <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
-                    {detail.DOB}
+                    {detail.personalDetails?.DOB}
                   </td>
                   <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
-                    {detail.phone}
+                    {detail.personalDetails?.phone}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    {detail.roomno}
+                    {detail.roomNo}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
@@ -195,18 +196,18 @@ const PersonalDetails = () => {
                               onClick={async () => {
                                 setPersonalDetails((prev) =>
                                   prev.map((item) =>
-                                    item.studentid === detail.studentid
+                                    item._id === detail._id
                                       ? { ...item, approving: true }
                                       : item
                                   )
                                 );
                                 await handleVerifyDocuments(
-                                  detail.registrationNumber,
+                                  detail.originalRegistrationNumber,
                                   "approved"
                                 );
                                 setPersonalDetails((prev) =>
                                   prev.map((item) =>
-                                    item.studentid === detail.studentid
+                                    item._id === detail._id
                                       ? { ...item, approving: false }
                                       : item
                                   )
@@ -254,18 +255,18 @@ const PersonalDetails = () => {
                               onClick={async () => {
                                 setPersonalDetails((prev) =>
                                   prev.map((item) =>
-                                    item.studentid === detail.studentid
+                                    item._id === detail._id
                                       ? { ...item, rejecting: true }
                                       : item
                                   )
                                 );
                                 await handleVerifyDocuments(
-                                  detail.studentid,
+                                  detail.originalRegistrationNumber,
                                   "rejected"
                                 );
                                 setPersonalDetails((prev) =>
                                   prev.map((item) =>
-                                    item.studentid === detail.studentid
+                                    item._id === detail._id
                                       ? { ...item, rejecting: false }
                                       : item
                                   )
@@ -347,8 +348,8 @@ const PersonalDetails = () => {
             <div className="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto shadow-2xl">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-800">
-                  Documents - {selectedStudent.firstname}{" "}
-                  {selectedStudent.lastname}
+                  Documents - {selectedStudent.personalDetails?.firstname}{" "}
+                  {selectedStudent.personalDetails?.lastname}
                 </h3>
                 <button
                   onClick={() => setShowDocuments(false)}
@@ -367,10 +368,10 @@ const PersonalDetails = () => {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-bold text-lg text-gray-800">
-                        {formatDocType(doc.type)}
+                        {formatDocType(doc.name)}
                       </h4>
                       <a
-                        href={`http://localhost:5000/${doc.path}`}
+                        href={`http://localhost:5000/${doc.url}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-blue-50 transition"
@@ -379,14 +380,11 @@ const PersonalDetails = () => {
                         <Download className="w-5 h-5" />
                       </a>
                     </div>
-                    <p
-                      className="text-sm text-gray-600 mb-1 truncate"
-                      title={doc.originalName}
-                    >
-                      {doc.originalName}
+                    <p className="text-sm text-gray-600 mb-1">
+                      Document: {doc.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}
+                      Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
                     </p>
                   </div>
                 ))}
@@ -425,7 +423,7 @@ const PersonalDetails = () => {
                         First Name
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.firstname}
+                        {selectedStudent.personalDetails?.firstname}
                       </p>
                     </div>
                     <div>
@@ -433,7 +431,7 @@ const PersonalDetails = () => {
                         Last Name
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.lastname}
+                        {selectedStudent.personalDetails?.lastname}
                       </p>
                     </div>
                     <div>
@@ -441,7 +439,7 @@ const PersonalDetails = () => {
                         Phone
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.phone}
+                        {selectedStudent.personalDetails?.phone}
                       </p>
                     </div>
                     <div>
@@ -449,7 +447,7 @@ const PersonalDetails = () => {
                         Date of Birth
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {new Date(selectedStudent.DOB).toLocaleDateString()}
+                        {selectedStudent.personalDetails?.DOB ? new Date(selectedStudent.personalDetails.DOB).toLocaleDateString() : 'Invalid Date'}
                       </p>
                     </div>
                     <div>
@@ -457,7 +455,7 @@ const PersonalDetails = () => {
                         Email
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.email}
+                        {selectedStudent.personalDetails?.email}
                       </p>
                     </div>
                   </div>
@@ -474,7 +472,7 @@ const PersonalDetails = () => {
                         Address
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.address}
+                        {selectedStudent.personalDetails?.address}
                       </p>
                     </div>
                     <div>
@@ -482,7 +480,7 @@ const PersonalDetails = () => {
                         City
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.city}
+                        {selectedStudent.personalDetails?.city}
                       </p>
                     </div>
                     <div>
@@ -490,7 +488,7 @@ const PersonalDetails = () => {
                         State
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.state}
+                        {selectedStudent.personalDetails?.state}
                       </p>
                     </div>
                     <div>
@@ -498,7 +496,7 @@ const PersonalDetails = () => {
                         ZIP Code
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.zipcode}
+                        {selectedStudent.personalDetails?.zipcode}
                       </p>
                     </div>
                   </div>
@@ -515,7 +513,7 @@ const PersonalDetails = () => {
                         Student ID
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border font-mono">
-                        {selectedStudent.studentid}
+                        {selectedStudent.personalDetails?.studentid}
                       </p>
                     </div>
                     <div>
@@ -523,7 +521,7 @@ const PersonalDetails = () => {
                         Hostel Block
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.hostelblock}
+                        {selectedStudent.hostelBlock}
                       </p>
                     </div>
                     <div>
@@ -531,7 +529,7 @@ const PersonalDetails = () => {
                         Room Number
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border">
-                        {selectedStudent.roomno}
+                        {selectedStudent.roomNo}
                       </p>
                     </div>
                   </div>
