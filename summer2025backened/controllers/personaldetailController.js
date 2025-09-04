@@ -18,6 +18,7 @@ export const personaldetailInsert = async (req, res) => {
       state,
       zipcode,
       studentid,
+      registrationNumber,
       hostelblock,
       roomno,
       imageUrl
@@ -25,12 +26,12 @@ export const personaldetailInsert = async (req, res) => {
 console.log("Data received on server:", imageUrl);
     // Check if student already exists
     const existingStudent = await personaldetailModel.findOne({
-      $or: [{ studentid }, { email }],
+      $or: [{ studentid }, { email }, { registrationNumber }],
     });
     if (existingStudent) {
       return res.status(400).send({
         status: 0,
-        message: "Student with this ID or email already exists",
+        message: "Student with this ID, email, or registration number already exists",
       });
     }
 
@@ -45,6 +46,7 @@ console.log("Data received on server:", imageUrl);
       state,
       zipcode,
       studentid,
+      registrationNumber,
       hostelblock,
       roomno,
      imageUrl

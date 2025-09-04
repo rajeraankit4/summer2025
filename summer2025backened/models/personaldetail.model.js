@@ -12,6 +12,7 @@ const personaldetailSchema = new mongoose.Schema({
   state: { type: String, required: true },
   zipcode: { type: String, required: true },
   studentid: { type: String, required: true, unique: true },
+  registrationNumber: { type: String, required: true, unique: true, trim: true },
   hostelblock: { type: String, required: true },
   roomno: { type: String, required: true },
 

@@ -7,7 +7,8 @@ import {
   login,
   signup,
   getMe,
-  verifyStudentEmailForSignup
+  verifyStudentEmailForSignup,
+  verifyRegistrationNumber
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -21,6 +22,9 @@ router.post("/resend-code", resendVerificationCode);
 
 // Student email verification before signup
 router.post("/verify-student-email", verifyStudentEmailForSignup);
+
+// Registration number verification
+router.post("/verify-registration-number", verifyRegistrationNumber);
 
 // Get logged-in user's details
 router.get("/users/me", verifyToken, getMe);
