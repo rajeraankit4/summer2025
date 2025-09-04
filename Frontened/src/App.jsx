@@ -7,7 +7,6 @@ import StudentRoutes from "./Components/Pages/Studentroutesdef/StudentRoutes";
 import LoginHub from "./Components/LoginHub";
 import AdminLogin from "./Components/AdminLogin";
 import AdminLoginForm from "./components/AdminLoginForm";
-import LoginPage from "./LoginPage";
 import SignupFlow from "./Components/Students/SignupFlow";
 import StudentLogin from "./Components/Students/StudentLogin";
 import StudentSignup from "./Components/Students/StudentSignup";
@@ -23,9 +22,7 @@ const AppRoutes = () => {
       <Route path="/loginhub" element={<LoginHub />} />
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/admin-login-form" element={<AdminLoginForm />} />
-      <Route path="/login/:role" element={<LoginPage />} />
       <Route path="/student-login" element={<StudentLogin />} />
-      <Route path="/signup" element={<LoginPage mode="signup" />} />
       <Route path="/student-signup" element={<StudentSignup />} />
       <Route path="/mess-admin/*" element={<MessAdminRoutes />} />
 
