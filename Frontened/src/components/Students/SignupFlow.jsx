@@ -28,6 +28,7 @@ const SignupFlow = () => {
     state: "",
     zipCode: "",
     studentId: "",
+    registrationNumber: "",
     hostelBlock: "",
     roomNumber: "",
     mealPlan: "",

@@ -39,10 +39,10 @@ const PersonalDetails = () => {
     getAllpersonalDetails();
   }, []);
 
-  const handleVerifyDocuments = async (studentId, status) => {
+  const handleVerifyDocuments = async (registrationNumber, status) => {
     try {
       await axios.patch(
-        `http://localhost:5000/api/personaldetail/verify-documents/${studentId}`,
+        `http://localhost:5000/api/personaldetail/verify-documents/${registrationNumber}`,
         { status }
       );
       toast.success(`Documents ${status} successfully`);
@@ -201,7 +201,7 @@ const PersonalDetails = () => {
                                   )
                                 );
                                 await handleVerifyDocuments(
-                                  detail.studentid,
+                                  detail.registrationNumber,
                                   "approved"
                                 );
                                 setPersonalDetails((prev) =>

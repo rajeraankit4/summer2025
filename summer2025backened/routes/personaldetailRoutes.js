@@ -2,6 +2,7 @@ import express from "express";
 import {
   personaldetailInsert,
   personaldetailList,
+  createStudentWithEnrollment,
   uploadDocuments,
   verifyDocuments,
   getPendingVerifications,
@@ -13,15 +14,16 @@ const router = express.Router();
 
 // POST request to insert personal detail
 router.post("/insert", personaldetailInsert);
+router.post("/register-student", createStudentWithEnrollment); // New combined endpoint
 router.get("/view", personaldetailList);
 
 // Document upload and verification routes
 router.post(
-  "/upload-documents/:studentId",
+  "/upload-documents/:regno",
   upload.array("documents", 5),
   uploadDocuments
 );
-router.patch("/verify-documents/:studentId", verifyDocuments);
+router.patch("/verify-documents/:regno", verifyDocuments);
 
 // Admin verification management routes
 router.get("/pending-verifications", getPendingVerifications);

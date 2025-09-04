@@ -61,11 +61,11 @@ const StudentVerificationManager = () => {
   };
 
   // Handle verification decision
-  const handleVerification = async (studentId, status) => {
+  const handleVerification = async (registrationNumber, status) => {
     try {
       setLoading(true);
       const response = await axios.patch(
-        `http://localhost:5000/api/personaldetail/verify-documents/${studentId}`,
+        `http://localhost:5000/api/personaldetail/verify-documents/${registrationNumber}`,
         { status }
       );
 
@@ -184,7 +184,7 @@ const StudentVerificationManager = () => {
             <>
               <button
                 onClick={() =>
-                  handleVerification(student.studentid, "approved")
+                  handleVerification(student.registrationNumber, "approved")
                 }
                 disabled={loading}
                 className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors flex items-center space-x-1 disabled:opacity-50"
@@ -194,7 +194,7 @@ const StudentVerificationManager = () => {
               </button>
               <button
                 onClick={() =>
-                  handleVerification(student.studentid, "rejected")
+                  handleVerification(student.registrationNumber, "rejected")
                 }
                 disabled={loading}
                 className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors flex items-center space-x-1 disabled:opacity-50"
@@ -423,7 +423,7 @@ const StudentVerificationManager = () => {
                     <button
                       onClick={() =>
                         handleVerification(
-                          selectedStudent.studentid,
+                          selectedStudent.registrationNumber,
                           "approved"
                         )
                       }
@@ -436,7 +436,7 @@ const StudentVerificationManager = () => {
                     <button
                       onClick={() =>
                         handleVerification(
-                          selectedStudent.studentid,
+                          selectedStudent.registrationNumber,
                           "rejected"
                         )
                       }

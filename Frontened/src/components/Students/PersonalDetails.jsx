@@ -101,46 +101,29 @@ const PersonalDetails = ({ data, updateData, onNext, onPrev }) => {
       // --- Continue with your original database submission logic ---
       let saveSuccessful = false;
       try {
-        const existingStudent = await axios.get(
-          `http://localhost:5000/api/personaldetail/view`
-        );
-        const studentExists = existingStudent.data.personaldetailList?.some(
-          (student) =>
-            student.studentid === updatedFormData.studentid ||
-            student.email === updatedFormData.email
+        // Use the new combined endpoint that handles both personal details and enrollment
+        const response = await axios.post(
+          "http://localhost:5000/api/personaldetail/register-student",
+          updatedFormData
         );
 
-        if (!studentExists) {
-          await axios.post(
-            "http://localhost:5000/api/personaldetail/insert",
-            
-            updatedFormData // Send data with the new imageUrl
-          );
-          toast.success("Personal details saved successfully");
+        if (response.data.status === 1) {
+          toast.success("Student registration completed successfully");
           saveSuccessful = true;
         } else {
+          toast.error(response.data.message || "Registration failed");
+        }
+
+      } catch (dbError) {
+        console.error("Registration error:", dbError);
+        
+        if (dbError.response?.status === 400) {
           toast.info("Student already exists, proceeding to next step");
           saveSuccessful = true;
-        }
-      } catch (dbError) {
-        console.error("Database error:", dbError);
-        // Fallback insert attempt
-        try {
-          await axios.post(
-            "http://localhost:5000/api/personaldetail/insert",
-            updatedFormData
-          );
-          toast.success("Personal details saved successfully");
-          saveSuccessful = true;
-        } catch (insertError) {
-          if (insertError.response?.status === 400) {
-            toast.info("Student already exists, proceeding to next step");
-            saveSuccessful = true;
-          } else {
-            toast.error("Failed to save personal details");
-            setIsSubmitting(false);
-            return;
-          }
+        } else {
+          toast.error("Failed to complete registration");
+          setIsSubmitting(false);
+          return;
         }
       }
 
