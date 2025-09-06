@@ -41,15 +41,15 @@ userSchema.methods.generateQrToken = async function (save = true) {
   const PersonalDetail = mongoose.model("personaldetails");
   const personalDetailsDoc = await PersonalDetail.findById(this.studentDetails);
 
-  if (!personalDetailsDoc || !personalDetailsDoc.studentid) {
-    throw new Error("Student details or studentid not found.");
+  if (!personalDetailsDoc || !personalDetailsDoc.registrationNumber) {
+    throw new Error("Student details or registrationNumber not found.");
   }
 
   // Random 16-byte hex string
   const randomPart = crypto.randomBytes(16).toString("hex");
 
-  // Append student's unique studentid from personalDetails to make the randomly generated token unique
-  const newToken = `${randomPart}-${personalDetailsDoc.studentid}`;
+  // Append student's unique registrationNumber from personalDetails to make the randomly generated token unique
+  const newToken = `${randomPart}-${personalDetailsDoc.registrationNumber}`;
 
   this.qrToken = newToken;
 

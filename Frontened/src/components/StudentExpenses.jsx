@@ -4,7 +4,7 @@ import { Plus, Search, DollarSign, User, Receipt } from "lucide-react";
 
 const StudentExpenses = () => {
   const [expenseData, setExpenseData] = useState({
-    studentid: "",
+  studentid: "",
     amount: "",
     description: "",
   });
@@ -58,7 +58,7 @@ const StudentExpenses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!expenseData.studentid || !expenseData.amount) {
+  if (!expenseData.studentid || !expenseData.amount) {
       alert("Please fill in all required fields");
       return;
     }
@@ -86,7 +86,7 @@ const StudentExpenses = () => {
 
       const newExpense = {
         id: Date.now(),
-        studentid: expenseData.studentid.toUpperCase(),
+  studentid: expenseData.studentid.toUpperCase(),
         amount: expenseData.amount,
         description: description,
         date: new Date().toISOString().split("T")[0],
@@ -95,7 +95,7 @@ const StudentExpenses = () => {
       setRecentExpenses((prev) => [newExpense, ...prev]);
 
       setExpenseData({
-        studentid: "",
+  studentid: "",
         amount: "",
         description: "",
       });
@@ -139,7 +139,7 @@ const StudentExpenses = () => {
 
   const filteredExpenses = recentExpenses.filter(
     (expense) =>
-      expense.studentid.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  expense.studentid.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (expense.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 

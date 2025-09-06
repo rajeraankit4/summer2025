@@ -36,12 +36,6 @@ router.put("/:id", updateMessStaff);
 router.delete("/:id", deleteMessStaff);
 router.get("/stats", transactionStats);
 
-router.post(
-  "/add-expense",
-  verifyToken,
-  restrictTo("messadmin"),
-  createExpense
-);
 router.post("/auth/login", loginMessStaff); // ✅ LOGIN for mess staff
 
 router.get("/transactions", verifyToken, getMessTransactions );

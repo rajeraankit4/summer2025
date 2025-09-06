@@ -1,15 +1,14 @@
 import { verifyToken } from "../middleware/auth.js";
 import express from "express";
-import messexpenses from "../models/messtransaction.model.js";
 import User from "../models/user.model.js";
-import crypto from "crypto";
+import axios from "axios";
 
 const router = express.Router();
 
 // POST /api/qr/scan
 router.post("/scan", async (req, res) => {
   try {
-    const { qrToken } = req.body;
+    const { qrToken, amount = 85, description = "MessMeal" } = req.body;
     if (!qrToken) {
       return res.status(400).json({ error: "qrToken is required" });
     }
@@ -18,26 +17,55 @@ router.post("/scan", async (req, res) => {
     if (!user || !user.studentDetails) {
       return res.status(404).json({ error: "Student not found" });
     }
-    const studentDetail = user.studentDetails;
-    // Create expense
+    const registrationNumber = user.studentDetails.registrationNumber;
+    if (!registrationNumber) {
+      return res.status(404).json({ error: "Registration number not found for student" });
+    }
+
+    // Find enrollment for studentid
+    const enrollmentModel = (await import("../models/enrollment.model.js")).default;
+    const enrollment = await enrollmentModel.findOne({ registrationNumber, isActive: true });
+    if (!enrollment) {
+      return res.status(404).json({ error: "Active enrollment not found for this registration number" });
+    }
+    const studentid = enrollment.studentid;
+
+    // Find personal details for email
+    const personaldetailModel = (await import("../models/personaldetail.model.js")).default;
+    const studentDetail = await personaldetailModel.findOne({ registrationNumber });
+    if (!studentDetail) {
+      return res.status(404).json({ error: "Student details not found" });
+    }
+
+    // Save expense directly
+    const messexpenses = (await import("../models/messtransaction.model.js")).default;
+    const Stats = (await import("../models/stats.model.js")).default;
+    const stat = await Stats.findOneAndUpdate(
+      {},
+      { $inc: { mealsToday: 1 } },
+      { new: true, upsert: true }
+    );
     const expense = new messexpenses({
-      studentid: studentDetail.studentid,
       email: studentDetail.email,
-      amount: 45,
-      description: "Mess Meal",
+      registrationNumber,
+      studentid,
+      amount,
+      description,
     });
     await expense.save();
+
     return res.status(201).json({
       message: "Expense recorded successfully",
-      student: {
-        name: `${studentDetail.firstname} ${studentDetail.lastname}`,
-        email: studentDetail.email,
-      },
-      expense: {
-        studentid: expense.studentid,
+      data: {
+        registrationNumber,
         amount: expense.amount,
         description: expense.description,
         date: expense.date,
+        studentName: `${studentDetail.firstname} ${studentDetail.lastname}`,
+        email: expense.email,
+      },
+      stats: {
+        mealsToday: stat.mealsToday,
       },
     });
   } catch (err) {

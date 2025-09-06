@@ -5,7 +5,7 @@ const enrollmentSchema = new mongoose.Schema({
     type: String, 
     required: true
   },
-  hostelRollNo: { 
+  studentid: { 
     type: String, 
     required: true 
   },
@@ -64,7 +64,7 @@ const enrollmentSchema = new mongoose.Schema({
 
 // Add indexes
 enrollmentSchema.index({ registrationNumber: 1 });
-enrollmentSchema.index({ hostelRollNo: 1, isActive: 1 });
+enrollmentSchema.index({ studentid: 1, isActive: 1 });
 
 const enrollmentModel = mongoose.model(
   "enrollments",

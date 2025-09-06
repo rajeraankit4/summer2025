@@ -513,7 +513,7 @@ const PersonalDetails = () => {
                         Student ID
                       </label>
                       <p className="text-gray-900 bg-white px-3 py-2 rounded border font-mono">
-                        {selectedStudent.personalDetails?.studentid}
+                        {selectedStudent.studentID}
                       </p>
                     </div>
                     <div>

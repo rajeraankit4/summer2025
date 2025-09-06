@@ -7,11 +7,6 @@ const personaldetailSchema = new mongoose.Schema({
     unique: true, 
     trim: true 
   },
-  studentid: { 
-    type: String, 
-    required: true, 
-    unique: true 
-  },
   firstname: { 
     type: String, 
     required: true 

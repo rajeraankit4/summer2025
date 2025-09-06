@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import personaldetailModel from "../models/personaldetail.model.js";
 import messexpenses from "../models/messtransaction.model.js";
 import Stats from "../models/stats.model.js";
+import enrollmentModel from "../models/enrollment.model.js";
 
 // ✅ Create Expense
 export const createExpense = async (req, res) => {
@@ -23,10 +24,16 @@ export const createExpense = async (req, res) => {
       isEmpty: !description || description.trim() === "",
     });
 
-    const studentDetail = await personaldetailModel.findOne({ studentid });
+    // Find enrollment by studentid
+    const enrollment = await enrollmentModel.findOne({ studentid, isActive: true });
+    if (!enrollment) {
+      return res.status(404).json({ message: "Active enrollment not found for this studentid" });
+    }
+    const regno = enrollment.registrationNumber;
+    const studentDetail = await personaldetailModel.findOne({ registrationNumber: regno });
 
     if (!studentDetail) {
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ message: "Student not found for this enrollment" });
     }
     const stat = await Stats.findOneAndUpdate(
       {},
@@ -34,9 +41,11 @@ export const createExpense = async (req, res) => {
       { new: true, upsert: true }
     );
 
+    // Store expense using registration number
     const expense = new messexpenses({
       email: studentDetail.email,
-      studentid,
+      registrationNumber: regno,
+      studentid: enrollment.studentid,
       amount,
       description: finalDescription,
     });
@@ -47,7 +56,7 @@ export const createExpense = async (req, res) => {
     res.status(201).json({
       message: "Expense recorded successfully",
       data: {
-        studentid: expense.studentid,
+        registrationNumber: regno,
         amount: expense.amount,
         description: expense.description,
         date: expense.date,

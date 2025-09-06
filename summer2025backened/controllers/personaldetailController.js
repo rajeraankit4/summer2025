@@ -18,17 +18,17 @@ export const createStudentWithEnrollment = async (req, res) => {
       city,
       state,
       zipcode,
-      studentid,
       registrationNumber,
       hostelblock,
       roomno,
       imageUrl,
-      semester = 1
+      semester = 1,
+      studentid
     } = req.body;
 
     // Check if student already exists
     const existingStudent = await personaldetailModel.findOne({
-      $or: [{ studentid }, { email }, { registrationNumber }],
+  $or: [{ email }, { registrationNumber }],
     });
 
     let personalDetailsCreated = false;
@@ -46,7 +46,7 @@ export const createStudentWithEnrollment = async (req, res) => {
         city,
         state,
         zipcode,
-        studentid,
+
         registrationNumber
       });
       
@@ -74,7 +74,7 @@ export const createStudentWithEnrollment = async (req, res) => {
       // Create new enrollment
       const newEnrollment = new enrollmentModel({
         registrationNumber,
-        hostelRollNo: studentid,
+        studentid,
         hostelBlock: hostelblock,
         roomNo: roomno,
         semester,
@@ -131,13 +131,13 @@ export const personaldetailInsert = async (req, res) => {
       city,
       state,
       zipcode,
-      studentid,
+
       registrationNumber
     } = req.body;
 
     // Check if student already exists
     const existingStudent = await personaldetailModel.findOne({
-      $or: [{ studentid }, { email }, { registrationNumber }],
+  $or: [{ email }, { registrationNumber }],
     });
     if (existingStudent) {
       return res.status(400).send({
@@ -156,7 +156,7 @@ export const personaldetailInsert = async (req, res) => {
       city,
       state,
       zipcode,
-      studentid,
+
       registrationNumber
     });
      
@@ -384,7 +384,6 @@ export const getPendingVerifications = async (req, res) => {
             firstname: personalDetails.firstname,
             lastname: personalDetails.lastname,
             email: personalDetails.email,
-            studentid: personalDetails.studentid,
             DOB: personalDetails.DOB,
             phone: personalDetails.phone,
             registrationNumber: personalDetails.registrationNumber,
@@ -438,7 +437,6 @@ export const getAllVerifications = async (req, res) => {
             firstname: personalDetails.firstname,
             lastname: personalDetails.lastname,
             email: personalDetails.email,
-            studentid: personalDetails.studentid,
             DOB: personalDetails.DOB,
             phone: personalDetails.phone,
             registrationNumber: personalDetails.registrationNumber,

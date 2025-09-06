@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const expenseSchema = new mongoose.Schema(
   {
     email: { type: String, required: true },
+    registrationNumber: { type: String, required: true },
     studentid: { type: String, required: true },
     amount: { type: Number, required: true },
     description: { type: String, required: true },
