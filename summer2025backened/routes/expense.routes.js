@@ -5,6 +5,7 @@ import { verifyToken, restrictTo } from "../middleware/auth.js";
 const router = express.Router();
 
 // Add a new expense
+// router.post("/add-expense", verifyToken, restrictTo("messadmin"), createExpense);
 router.post("/add-expense", createExpense);
 
 // Get recent expenses
