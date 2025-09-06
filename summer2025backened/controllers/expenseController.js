@@ -29,40 +29,44 @@ export const createExpense = async (req, res) => {
     if (!enrollment) {
       return res.status(404).json({ message: "Active enrollment not found for this studentid" });
     }
-    const regno = enrollment.registrationNumber;
-    const stat = await Stats.findOneAndUpdate(
-      {},
-      { $inc: { mealsToday: 1 } },
-      { new: true, upsert: true }
-    );
-
-    // Store expense using registration number
-    const expense = new messexpenses({
-      registrationNumber: regno,
-      studentid: enrollment.studentid,
+    // Use common helper to add expense
+    const expense = await addMessExpense({
+      registrationNumber: enrollment.registrationNumber,
+      studentid,
       amount,
-      description: finalDescription,
+      description,
     });
 
-    await expense.save();
-    console.log("✅ Expense saved successfully");
-
-    res.status(201).json({
+    return res.status(201).json({
       message: "Expense recorded successfully",
       data: {
-        registrationNumber: regno,
+        registrationNumber: expense.registrationNumber,
         amount: expense.amount,
         description: expense.description,
         date: expense.date,
       },
-      stats: {
-        mealsToday: stat.mealsToday,
-      },
     });
   } catch (error) {
     console.error("Error adding mess expense:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
+};
+
+export const addMessExpense = async ({ registrationNumber, studentid, amount, description }) => {
+  if (!registrationNumber || !studentid || !amount) {
+    throw new Error("Missing required fields: registrationNumber, studentid, or amount");
+  }
+
+  // Create and save expense
+  const expense = new messexpenses({
+    registrationNumber,
+    studentid,
+    amount,
+    description: description?.trim() || "Mess Expense",
+  });
+
+  await expense.save();
+  return expense;
 };
 
 

@@ -1,14 +1,14 @@
 import { verifyToken } from "../middleware/auth.js";
 import express from "express";
 import User from "../models/user.model.js";
-import axios from "axios";
+import { addMessExpense } from "../controllers/expenseController.js";
 
 const router = express.Router();
 
 // POST /api/qr/scan
 router.post("/scan", async (req, res) => {
   try {
-    const { qrToken, amount = 15, description = "MessMeal" } = req.body;
+    const { qrToken, amount = 55, description = "MessMeal" } = req.body;
     if (!qrToken) {
       return res.status(400).json({ error: "qrToken is required" });
     }
@@ -28,38 +28,25 @@ router.post("/scan", async (req, res) => {
     if (!enrollment) {
       return res.status(404).json({ error: "Active enrollment not found for this registration number" });
     }
-    const studentid = enrollment.studentid;
-
-    // Save expense directly
-    const messexpenses = (await import("../models/messtransaction.model.js")).default;
-    const Stats = (await import("../models/stats.model.js")).default;
-    const stat = await Stats.findOneAndUpdate(
-      {},
-      { $inc: { mealsToday: 1 } },
-      { new: true, upsert: true }
-    );
-    const expense = new messexpenses({
+     // Use common helper to add expense
+    const expense = await addMessExpense({
       registrationNumber,
-      studentid,
+      studentid: enrollment.studentid,
       amount,
       description,
     });
-    await expense.save();
 
     return res.status(201).json({
       message: "Expense recorded successfully",
       data: {
-        registrationNumber,
+        registrationNumber: expense.registrationNumber,
         amount: expense.amount,
         description: expense.description,
         date: expense.date,
-        email: expense.email,
-      },
-      stats: {
-        mealsToday: stat.mealsToday,
       },
     });
   } catch (err) {
+    console.error("Error in /scan:", err);
     return res.status(500).json({ error: "Server error", details: err.message });
   }
 });
