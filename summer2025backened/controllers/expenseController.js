@@ -30,11 +30,6 @@ export const createExpense = async (req, res) => {
       return res.status(404).json({ message: "Active enrollment not found for this studentid" });
     }
     const regno = enrollment.registrationNumber;
-    const studentDetail = await personaldetailModel.findOne({ registrationNumber: regno });
-
-    if (!studentDetail) {
-      return res.status(404).json({ message: "Student not found for this enrollment" });
-    }
     const stat = await Stats.findOneAndUpdate(
       {},
       { $inc: { mealsToday: 1 } },
@@ -43,7 +38,6 @@ export const createExpense = async (req, res) => {
 
     // Store expense using registration number
     const expense = new messexpenses({
-      email: studentDetail.email,
       registrationNumber: regno,
       studentid: enrollment.studentid,
       amount,
@@ -60,8 +54,6 @@ export const createExpense = async (req, res) => {
         amount: expense.amount,
         description: expense.description,
         date: expense.date,
-        studentName: `${studentDetail.firstname} ${studentDetail.lastname}`,
-        email: expense.email,
       },
       stats: {
         mealsToday: stat.mealsToday,

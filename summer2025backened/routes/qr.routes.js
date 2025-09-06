@@ -8,7 +8,7 @@ const router = express.Router();
 // POST /api/qr/scan
 router.post("/scan", async (req, res) => {
   try {
-    const { qrToken, amount = 85, description = "MessMeal" } = req.body;
+    const { qrToken, amount = 15, description = "MessMeal" } = req.body;
     if (!qrToken) {
       return res.status(400).json({ error: "qrToken is required" });
     }
@@ -30,13 +30,6 @@ router.post("/scan", async (req, res) => {
     }
     const studentid = enrollment.studentid;
 
-    // Find personal details for email
-    const personaldetailModel = (await import("../models/personaldetail.model.js")).default;
-    const studentDetail = await personaldetailModel.findOne({ registrationNumber });
-    if (!studentDetail) {
-      return res.status(404).json({ error: "Student details not found" });
-    }
-
     // Save expense directly
     const messexpenses = (await import("../models/messtransaction.model.js")).default;
     const Stats = (await import("../models/stats.model.js")).default;
@@ -46,7 +39,6 @@ router.post("/scan", async (req, res) => {
       { new: true, upsert: true }
     );
     const expense = new messexpenses({
-      email: studentDetail.email,
       registrationNumber,
       studentid,
       amount,
@@ -61,7 +53,6 @@ router.post("/scan", async (req, res) => {
         amount: expense.amount,
         description: expense.description,
         date: expense.date,
-        studentName: `${studentDetail.firstname} ${studentDetail.lastname}`,
         email: expense.email,
       },
       stats: {
