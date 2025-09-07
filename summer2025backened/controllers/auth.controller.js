@@ -193,17 +193,35 @@ export const signup = async (req, res) => {
 // Get logged-in user's details
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({
+    const { email, role } = req.user;
+
+    if (role !== "student") {
+      return res.status(403).json({ status: 0, message: "Access denied" });
+    }
+
+    // Populate studentDetails
+    const user = await User.findOne({ email, role }).populate(
+      "studentDetails"
+    );
+
+    if (!user || !user.studentDetails) {
+      return res.status(404).json({ status: 0, message: "Student details not found" });
+    }
+
+    const studentInfo = {
+      name: `${user.studentDetails.firstname} ${user.studentDetails.lastname}`,
       email: user.email,
-      role: user.role,
-      qrToken: user.qrToken || ""
-    });
+      phone: user.studentDetails.phone,
+      registrationNumber: user.studentDetails.registrationNumber,
+    };
+
+    return res.status(200).json({ status: 1, data: studentInfo });
   } catch (err) {
-    res.status(500).json({ error: "Server error", details: err.message });
+    console.error("Error in getMe:", err);
+    return res.status(500).json({ status: 0, message: "Server error", error: err.message });
   }
 };
+
 
 export const verifyStudentEmailForSignup = async (req, res) => {
   const { email } = req.body;

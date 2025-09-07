@@ -1,3 +1,4 @@
+// Studnet Portal Routes
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import StudentLayout from "../../StudentLayouts/StudentLayout";
@@ -137,69 +138,37 @@ const StudentExpenses = () => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [student, setStudent] = useState(null); // to hold student base details
 
   useEffect(() => {
-    const fetchStudentDetails = async () => {
+    const fetchExpenses = async () => {
       try {
-        const token = localStorage.getItem("token"); // or however you store it
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Authentication token not found.");
 
-        const res = await axios.get("/api/personaldetail/view", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await axios.get("/api/expense/transactions", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        const loggedInStudentId = localStorage.getItem("studentid"); // or extract from decoded JWT
-        const match = res.data.personaldetailList.find(
-          (p) => p.studentid === loggedInStudentId
-        );
 
-        if (match) {
-          setStudent(match);
+        if (response.data.status === 1 && Array.isArray(response.data.data)) {
+          setExpenses(response.data.data);
+        } else {
+          throw new Error(response.data.message || "Failed to fetch expenses.");
         }
-      } catch (error) {
-        console.error("Failed to fetch student details:", error);
+      } catch (err) {
+        console.error("Error fetching expenses:", err);
+        setError("Failed to load expenses. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchStudentDetails();
+    fetchExpenses();
   }, []);
-
-  useEffect(() => {
-  const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Authentication token not found.");
-      if (!student?.studentid) return; // Wait for studentid
-
-      const apiUrl = `/api/expense/transactions/${student.studentid}`;
-      console.log("API GET:", apiUrl);
-      const response = await axios.get(apiUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Student expenses API response:", response.data);
-      if (response.data.status === 1 && Array.isArray(response.data.data)) {
-        setExpenses(response.data.data);
-      } else {
-        throw new Error("Invalid response format");
-      }
-    } catch (err) {
-      console.error("Error fetching expenses:", err);
-      setError("Failed to load expenses. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (student?.studentid) fetchExpenses();
-}, [student]);
 
   if (loading)
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          💸 My Expenses
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">💸 My Expenses</h1>
         <p className="text-gray-500 text-center">Loading...</p>
       </div>
     );
@@ -207,40 +176,60 @@ const StudentExpenses = () => {
   if (error)
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          💸 My Expenses
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">💸 My Expenses</h1>
         <div className="bg-red-100 text-red-700 p-4 rounded-md text-center">
           {error}
         </div>
       </div>
     );
 
-  const downloadPDF = () => {
-    if (!student) {
-      alert("Student info not loaded yet!");
+
+  const downloadPDF = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Authentication required!");
       return;
     }
 
+    // Fetch student details securely using getMe
+    const { data } = await axios.get("/api/auth/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!data || data.status !== 1 || !data.data) {
+      alert("Unable to fetch student details!");
+      return;
+    }
+
+    const { name, email, phone, registrationNumber } = data.data;
+
+    // Check if expenses are loaded
+    if (!expenses || expenses.length === 0) {
+      alert("No expenses to generate report!");
+      return;
+    }
+
+    // Initialize PDF
     const doc = new jsPDF();
 
+    // Title
     doc.setFontSize(18);
     doc.text("Student Expenses Report", 14, 20);
 
+    // Student info section
     doc.setFontSize(12);
-    doc.text(`Name: ${student.firstname} ${student.lastname}`, 14, 30);
-    doc.text(`Student ID: ${student.studentid}`, 14, 38);
-    doc.text(`Email: ${student.email}`, 14, 46);
-    doc.text(`Phone: ${student.phone}`, 14, 54);
-    doc.text(`Room: ${student.hostelblock} - ${student.roomno}`, 14, 62);
-    doc.text(
-      `Address: ${student.address}, ${student.city}, ${student.state} - ${student.zipcode}`,
-      14,
-      70
-    );
+    doc.text(`Name: ${name}`, 14, 30);
+    doc.text(`Email: ${email}`, 14, 38);
+    doc.text(`Phone: ${phone}`, 14, 46);
+    doc.text(`Registration No: ${registrationNumber}`, 14, 54);
 
+    // Expenses table
     autoTable(doc, {
-      startY: 80,
+      startY: 70,
       head: [["Description", "Date", "Amount"]],
       body: expenses.map((e) => [
         e.description,
@@ -249,11 +238,14 @@ const StudentExpenses = () => {
       ]),
     });
 
-    const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-    doc.text(`Total Expense: Rs. ${total}`, 14, doc.lastAutoTable.finalY + 10);
+    // Save the PDF
+    doc.save("student_expenses_report.pdf");
+  } catch (error) {
+    console.error("Error generating PDF:", error.response?.data || error.message);
+    alert("Unable to generate PDF!");
+  }
+};
 
-    doc.save("expenses_report.pdf");
-  };
 
   return (
     <div className="space-y-6">
