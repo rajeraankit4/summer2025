@@ -215,7 +215,8 @@ export const getMe = async (req, res) => {
       registrationNumber: user.studentDetails.registrationNumber,
     };
 
-    return res.status(200).json({ status: 1, data: studentInfo });
+    // Include qrToken in the response for frontend QR code
+    return res.status(200).json({ status: 1, data: studentInfo, qrToken: user.qrToken });
   } catch (err) {
     console.error("Error in getMe:", err);
     return res.status(500).json({ status: 0, message: "Server error", error: err.message });
