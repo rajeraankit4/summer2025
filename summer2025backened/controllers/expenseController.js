@@ -70,71 +70,41 @@ export const addMessExpense = async ({ registrationNumber, studentid, amount, de
 };
 
 
-// ✅ Get Recent Expenses (for frontend table)
-export const getRecentExpenses = async (req, res) => {
+export const getTransactions = async (req, res) => {
+  console.log("HIT /transactions API"); // <-- add this 
   try {
-    const transactions = await messexpenses.find().sort({ date: -1 }).limit(50);
-    const formatted = transactions.map(
-      ({ _id, studentid, email, amount, description, date }) => ({
-        _id,
-        studentid,
-        email,
-        amount,
-        description,
-        date,
-      })
-    );
-    res.status(200).json({
-      status: 1,
-      message: "Recent expenses fetched successfully",
-      data: formatted,
-    });
-  } catch (error) {
-    console.error("Error fetching recent expenses:", error);
-    res.status(500).json({
-      status: 0,
-      message: "Failed to fetch recent expenses",
-      error: error.message,
-    });
-  }
-}; // <-- ✅ Closing getRecentExpenses
+    const { role, email } = req.user; // Extracted from JWT
 
-// ✅ Unified Get Mess Transactions (role + optional :studentid)
-export const getMessTransactions = async (req, res) => {
-  try {
-    const { role, email } = req.user;
-    const trimmedEmail = email.trim();
-    const { studentid } = req.params; // <-- from URL param, not query
+    let filter = {};
 
-    let transactions = [];
+    // If user is a student, filter by their registrationNumber
+    if (role === "student") {
+      // Fetch registrationNumber from DB
+      const user = await User.findOne({ email, role }).populate("studentDetails", "registrationNumber");
 
-    if (role === "superadmin" || role === "messadmin") {
-      if (studentid) {
-        // fetch only this student's transactions
-        transactions = await messexpenses
-          .find({ studentid: studentid.toUpperCase() })
-          .sort({ date: -1 });
-      } else {
-        // fetch all
-        transactions = await messexpenses.find().sort({ date: -1 });
+      if (!user || !user.studentDetails?.registrationNumber) {
+        return res.status(400).json({
+          status: 0,
+          message: "Registration number not found for this student",
+        });
       }
-    } else if (role === "student") {
-      transactions = await messexpenses
-        .find({
-          email: { $regex: `^${trimmedEmail}$`, $options: "i" },
-        })
-        .sort({ date: -1 });
-    } else {
-      return res.status(403).json({
-        status: 0,
-        message: "Unauthorized access",
-      });
+
+      const regno = user.studentDetails.registrationNumber;
+      filter.registrationNumber = regno.toUpperCase();
     }
 
+    // Fetch latest 50 transactions
+    const transactions = await messexpenses
+      .find(filter)
+      .sort({ date: -1 })
+      .limit(50);
+
+    // Format response
     const formatted = transactions.map(
-      ({ _id, studentid, email, amount, description, date }) => ({
+      ({ _id, studentid, registrationNumber, email, amount, description, date }) => ({
         _id,
         studentid,
+        registrationNumber,
         email,
         amount,
         description,
@@ -142,14 +112,14 @@ export const getMessTransactions = async (req, res) => {
       })
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 1,
       message: "Transactions fetched successfully",
       data: formatted,
     });
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    res.status(500).json({
+    return res.status(500).json({
       status: 0,
       message: "Failed to fetch transactions",
       error: error.message,

@@ -1,5 +1,5 @@
 import express from "express";
-import { createExpense, getRecentExpenses } from "../controllers/expenseController.js";
+import { createExpense, getTransactions } from "../controllers/expenseController.js";
 import { verifyToken, restrictTo } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -9,10 +9,6 @@ const router = express.Router();
 router.post("/add-expense", createExpense);
 
 // Get recent expenses
-router.get("/transactions", getRecentExpenses);
-
-// Get expenses for a specific student
-import { getMessTransactions } from "../controllers/expenseController.js";
-router.get("/transactions/:studentid", verifyToken, getMessTransactions);
+router.get("/transactions", verifyToken, getTransactions);
 
 export default router;
