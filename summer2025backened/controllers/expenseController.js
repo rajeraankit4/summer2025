@@ -70,6 +70,7 @@ export const addMessExpense = async ({ registrationNumber, studentid, amount, de
 };
 
 
+// getTransactions: transactions for mess staff/ superadmin (all transactions) or student (own transactions)
 export const getTransactions = async (req, res) => {
   console.log("HIT /transactions API"); // <-- add this 
   try {
