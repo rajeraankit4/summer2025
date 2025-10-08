@@ -43,8 +43,9 @@ const AdminLoginForm = () => {
     const res = await axios.post(loginUrl, formData);
     const { token, user } = res.data;
 
-    // Save user/token in context
-    login(user, token);
+  // Ensure role is present on the stored user object, then save
+  const userWithRole = user && typeof user === 'object' ? { ...user, role: formData.role } : { ...user, role: formData.role };
+  login(userWithRole, token);
 
     setSuccessMessage("Logged in successfully!");
 
